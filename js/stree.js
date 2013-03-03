@@ -10,7 +10,7 @@ App = {
             if (s == '')
                 return;
             $('#log').empty();
-            var tree = parse(s);
+            var tree = syntax_tree(s);
             1+1==2;
         });
     },
@@ -21,9 +21,42 @@ App = {
 
 function Node() {
     this.parent = null;
+
+    this.has_children = null;
     this.children = new Array();
+    this.previous = null;
+    this.next = null;
+    this.first = null;
+    this.last = null;
+
     this.value = null;
     this.parameters = null;
+};
+
+function syntax_tree(s) {
+    var t = parse(s);
+    t.relate(null);
+    return t;
+};
+
+/* Sets parent and sibling nodes for a given (sub)tree */
+Node.prototype.relate = function(parent) {
+    this.parent = parent;
+    this.has_children = (this.children.length > 0);
+
+    if (this.has_children) {
+        this.first = this.children[0];
+        this.last = this.children[this.children.length - 1];
+    }
+
+    for (var i = 0; i < this.children.length; i++)
+        this.children[i].relate(this);
+
+    for (var i = 0; i < this.children.length - 1; i++)
+        this.children[i].next = this.children[i+1];
+
+    for (var i = 1; i < this.children.length; i++)
+        this.children[i].previous = this.children[i-1];
 };
 
 function parse(s) {
