@@ -4,13 +4,14 @@ App = {
         this.bind();
     },
     bind: function() {
+        var that = this;
         $('#parse').click(function(e) {
             var s = $('#stage').val()
             if (s == '')
                 return;
             $('#log').empty();
             var tree = parse(s);
-            this.log(tree);
+            1+1==2;
         });
     },
     log: function(msg) {
@@ -22,6 +23,7 @@ function Node() {
     this.parent = null;
     this.children = new Array();
     this.value = null;
+    this.parameters = null;
 };
 
 function parse(s) {
@@ -29,10 +31,21 @@ function parse(s) {
     var n = new Node();
 
     if (s[0] != '[') {
-        n.value = s;
+        s = s.replace(/^\s+|\s+$/g, '');
+        /* Search for parameters on this text node */
+        var i = 0;
+        while ((i < s.length) && (s[i] != '(')) i++;
+        n.value = s.substring(0, i); /* Save the text node */
+
+        if (s[i] == '(') {
+            var start = i+1;
+            while ((s[i] != ')')) i++;
+            n.parameters = s.substring(start, i);
+        }
         return n;
     }
 
+    /* Parse the category label */
     var i = 1;
     while ((s[i] != ' ') && (s[i] != '[') && (s[i] != ']')) i++;
     n.value = s.substring(1, i+1);
