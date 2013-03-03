@@ -1,3 +1,7 @@
 body {
     margin-left:15px;
 }
+#canvas-container {
+    width:500px;
+    border:1px solid #aaa;
+}

@@ -24,10 +24,11 @@ function Node() {
 
     this.has_children = null;
     this.children = new Array();
-    this.previous = null;
-    this.next = null;
     this.first = null;
     this.last = null;
+    /* Siblings */
+    this.previous = null;
+    this.next = null;
 
     this.value = null;
     this.parameters = null;
@@ -36,6 +37,13 @@ function Node() {
 function syntax_tree(s) {
     var t = parse(s);
     t.relate(null);
+
+    var R = new Raphael('canvas-container', 500, 500);
+    var set = R.set();
+
+    set.push(R.path('M-250,0L0,0'));
+
+    set.translate(250, 250);
     return t;
 };
 
