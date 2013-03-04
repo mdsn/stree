@@ -1,5 +1,6 @@
 App = {
     debug: true,
+    R: null,
     init: function() {
         this.bind();
     },
@@ -19,6 +20,10 @@ App = {
     },
 };
 
+Tree = {
+    h_space: 20, /* Horizontal space between sibling nodes */
+};
+
 function Node() {
     this.parent = null;
 
@@ -30,6 +35,10 @@ function Node() {
     this.previous = null;
     this.next = null;
 
+    this.child_step = null;
+    this.left_width = null;
+    this.right_width = null;
+
     this.value = null;
     this.parameters = null;
 };
@@ -38,13 +47,56 @@ function syntax_tree(s) {
     var t = parse(s);
     t.relate(null);
 
-    var R = new Raphael('canvas-container', 500, 500);
-    var set = R.set();
+    App.R = new Raphael('canvas-container', 500, 500);
+    App.set = App.R.set();
+    var R = App.R;
+    var set = App.set;
 
-    set.push(R.path('M-250,0L0,0'));
+    t.set_width();
+    //set.push(R.path('M-250,0L0,0'));
 
     set.translate(250, 250);
     return t;
+};
+
+/* Traverse the tree post-order, set the space on each side of a node */
+Node.prototype.set_width = function() {
+    var text = App.R.text(0, 0, this.value);
+    var text_width = text.getBBox().width;
+
+    for (var child = this.first; child != null; child = child.next)
+        child.set_width();
+
+    /* As leaf nodes are not affected by children, their width is just
+     * that of its text (TODO: Measure parameters, get max) */
+    if (!this.has_children) {
+        this.left_width = text_width / 2;
+        this.right_width = text_width / 2;
+        return;
+    }
+
+    /* Space between children's centers is the max one so they're all
+     * equally separated. */
+    this.step = 0;
+    for (var child = this.first; (child != null) && (child.next != null); child = child.next) {
+        var space = child.right_width + Tree.h_space + child.next.left_width;
+        this.step = Math.max(this.step, space);
+    }
+
+    /* Parent width itself is defined by the widths of all its children */
+    this.left_width = 0.0;
+    this.right_width = 0.0;
+
+    /* childs - 1 because we need the sections, not the fence posts.
+     * We get the distance from the first-center to the last-center, so
+     * we need to add the left and right widths respectively. */
+    var children_width = ((this.children.length - 1) * this.step) / 2;
+    this.left_width = children_width + this.first.left_width;
+    this.right_width = children_width + this.last.right_width;
+
+    /* Check if this node isn't wider than all of its children */
+    this.left_width = Math.max(this.left_width, text_width / 2);
+    this.right_width = Math.max(this.right_width, text_width / 2);
 };
 
 /* Sets parent and sibling nodes for a given (sub)tree */
