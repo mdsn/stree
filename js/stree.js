@@ -21,7 +21,8 @@ App = {
 };
 
 Tree = {
-    h_space: 20, /* Horizontal space between sibling nodes */
+    h_space: 50, /* Horizontal space between sibling nodes */
+    v_space: 40, /* Vertical space between levels */
 };
 
 function Node() {
@@ -35,10 +36,14 @@ function Node() {
     this.previous = null;
     this.next = null;
 
+    this.x = null;
+    this.y = null;
+
     this.child_step = null;
     this.left_width = null;
     this.right_width = null;
 
+    this.text = null; /* Raphael text element */
     this.value = null;
     this.parameters = null;
 };
@@ -53,16 +58,42 @@ function syntax_tree(s) {
     var set = App.set;
 
     t.set_width();
+    t.assign_location(0, 0);
     //set.push(R.path('M-250,0L0,0'));
 
     set.translate(250, 250);
     return t;
 };
 
+function text_element(n) {
+    var text = App.R.text(0, 0, n.value);
+    text.attr({
+        'font-size': 16,
+    });
+    App.set.push(text);
+    return text;
+};
+
+/* Traverse the tree post-order, set the location of each children according to
+ * the step value found in set_width */
+Node.prototype.assign_location = function(x, y) {
+    this.x = x;
+    this.y = y;
+
+    this.text.transform(['T' + x + ',' + y]);
+
+    /* Treat x = 0 as the center of the canvas because we'll transpose it later */
+    if (this.has_children) {
+        var left_start = x - (this.step * (this.children.length-1) / 2);
+        for (var i = 0; i < this.children.length; i++)
+            this.children[i].assign_location(left_start + i*(this.step), y + Tree.v_space);
+    }
+};
+
 /* Traverse the tree post-order, set the space on each side of a node */
 Node.prototype.set_width = function() {
-    var text = App.R.text(0, 0, this.value);
-    var text_width = text.getBBox().width;
+    this.text = text_element(this);
+    var text_width = this.text.getBBox().width;
 
     for (var child = this.first; child != null; child = child.next)
         child.set_width();
