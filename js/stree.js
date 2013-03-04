@@ -22,7 +22,7 @@ App = {
 
 Tree = {
     h_space: 50, /* Horizontal space between sibling nodes */
-    v_space: 40, /* Vertical space between levels */
+    v_space: 60, /* Vertical space between levels */
 };
 
 function Node() {
@@ -52,16 +52,22 @@ function syntax_tree(s) {
     var t = parse(s);
     t.relate(null);
 
-    App.R = new Raphael('canvas-container', 500, 500);
-    App.set = App.R.set();
+    if (App.R)
+        App.R.clear();
+    else
+        App.R = new Raphael('canvas-container', 500, 500);
     var R = App.R;
-    var set = App.set;
+    R.setStart();
 
     t.set_width();
     t.assign_location(0, 0);
-    //set.push(R.path('M-250,0L0,0'));
 
-    set.translate(250, 250);
+    /* Move the entire tree */
+    var set = R.setFinish();
+    set.translate(t.left_width + Tree.h_space, Tree.v_space);
+
+    /* Resize the paper so it can show the entire tree */
+    R.setSize(t.left_width + (2*Tree.h_space) + t.right_width, 500);
     return t;
 };
 
@@ -70,7 +76,6 @@ function text_element(n) {
     text.attr({
         'font-size': 16,
     });
-    App.set.push(text);
     return text;
 };
 

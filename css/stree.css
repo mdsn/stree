@@ -2,6 +2,6 @@ body {
     margin-left:15px;
 }
 #canvas-container {
-    width:500px;
+    display:inline-block;
     border:1px solid #aaa;
 }
