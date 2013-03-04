@@ -88,6 +88,17 @@ function text_element(n) {
     return text;
 };
 
+/* Get the y coordinate over this node */
+Node.prototype.top_y = function() {
+    return this.y - (this.text.getBBox().height / 2) - Tree.padding_top;
+};
+
+/* Get the y coordinate under this node */
+Node.prototype.bottom_y = function() {
+    return this.y + (this.text.getBBox().height / 2) + Tree.padding_bottom;
+};
+
+/* Mark nodes under a triangle */
 Node.prototype.check_triangles = function() {
     this.draw_triangle = false;
     if ((!this.has_children) && (this.parent.caret))
@@ -107,17 +118,17 @@ Node.prototype.draw_tree_lines = function() {
     if (!this.parent) return;
 
     if (this.draw_triangle) {
-        var from = 'M' + this.parent.x + ',' + (this.parent.y + (this.parent.text.getBBox().height / 2) + Tree.padding_bottom);
-        var to1 = 'L' + (this.x - this.left_width) + ',' + (this.y - (this.text.getBBox().height / 2) - Tree.padding_top);
-        var to2 = 'L' + (this.x + this.right_width) + ',' + (this.y - (this.text.getBBox().height / 2) - Tree.padding_top);
+        var from = 'M' + this.parent.x + ',' + this.parent.bottom_y();
+        var to1 = 'L' + (this.x - this.left_width) + ',' + this.top_y();
+        var to2 = 'L' + (this.x + this.right_width) + ',' + this.top_y();
         var to3 = from.replace(/M/, 'L');
         App.R.path(from + to1 + to2 + to3);
         return;
     }
 
     /* Regular line to the parent */
-    var from = 'M' + this.parent.x + ',' + (this.parent.y + (this.text.getBBox().height / 2) + Tree.padding_bottom);
-    var to = 'L' + this.x + ',' + (this.y - (this.text.getBBox().height / 2) - Tree.padding_top);
+    var from = 'M' + this.parent.x + ',' + this.parent.bottom_y();
+    var to = 'L' + this.x + ',' + this.top_y();
     App.R.path(from + to);
 };
 
