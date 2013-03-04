@@ -39,12 +39,16 @@ function Node() {
     this.previous = null;
     this.next = null;
 
+    /* Coordinates for the center of the node's text element */
     this.x = null;
     this.y = null;
 
     this.child_step = null;
     this.left_width = null;
     this.right_width = null;
+
+    this.caret = null; /* true if the element has a caret indicating a triangle */
+    this.draw_triangle = null; /* true if this is the child of a caret node */
 
     this.text = null; /* Raphael text element */
     this.value = null;
@@ -54,6 +58,7 @@ function Node() {
 function syntax_tree(s) {
     var t = parse(s);
     t.relate(null);
+    t.check_triangles();
 
     if (App.R)
         App.R.clear();
@@ -83,6 +88,15 @@ function text_element(n) {
     return text;
 };
 
+Node.prototype.check_triangles = function() {
+    this.draw_triangle = false;
+    if ((!this.has_children) && (this.parent.caret))
+        this.draw_triangle = true;
+
+    for (var child = this.first; child != null; child = child.next)
+        child.check_triangles();
+};
+
 /* Traverse the tree post-order and draw the lines connecting each node with
  * its parent */
 Node.prototype.draw_tree_lines = function() {
@@ -92,8 +106,18 @@ Node.prototype.draw_tree_lines = function() {
     /* Do nothing for the root node */
     if (!this.parent) return;
 
+    if (this.draw_triangle) {
+        var from = 'M' + this.parent.x + ',' + (this.parent.y + (this.parent.text.getBBox().height / 2) + Tree.padding_bottom);
+        var to1 = 'L' + (this.x - this.left_width) + ',' + (this.y - (this.text.getBBox().height / 2) - Tree.padding_top);
+        var to2 = 'L' + (this.x + this.right_width) + ',' + (this.y - (this.text.getBBox().height / 2) - Tree.padding_top);
+        var to3 = from.replace(/M/, 'L');
+        App.R.path(from + to1 + to2 + to3);
+        return;
+    }
+
+    /* Regular line to the parent */
     var from = 'M' + this.parent.x + ',' + (this.parent.y + (this.text.getBBox().height / 2) + Tree.padding_bottom);
-    var to = 'L' + this.x + ',' + (this.y - this.text.getBBox().height - Tree.padding_top);
+    var to = 'L' + this.x + ',' + (this.y - (this.text.getBBox().height / 2) - Tree.padding_top);
     App.R.path(from + to);
 };
 
@@ -196,6 +220,11 @@ function parse(s) {
     var i = 1;
     while ((s[i] != ' ') && (s[i] != '[') && (s[i] != ']')) i++;
     n.value = s.substring(1, i+1);
+    /* Triangle-parent node */
+    n.value = n.value.replace(/\^/, function() {
+        n.caret = true;
+        return '';
+    });
     App.log('Parsed first token: ' + n.value);
 
     while (s[i] == ' ') i++;
