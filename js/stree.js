@@ -24,6 +24,8 @@ App = {
 Tree = {
     h_space: 50, /* Horizontal space between sibling nodes */
     v_space: 60, /* Vertical space between levels */
+    padding_bottom: 5, /* Space below the text for the lines */
+    padding_top: 5,
 };
 
 function Node() {
@@ -62,6 +64,7 @@ function syntax_tree(s) {
 
     t.set_width();
     t.assign_location(0, 0);
+    t.draw_tree_lines();
 
     /* Move the entire tree */
     var set = R.setFinish();
@@ -80,11 +83,25 @@ function text_element(n) {
     return text;
 };
 
+/* Traverse the tree post-order and draw the lines connecting each node with
+ * its parent */
+Node.prototype.draw_tree_lines = function() {
+    for (var child = this.first; child != null; child = child.next)
+        child.draw_tree_lines();
+
+    /* Do nothing for the root node */
+    if (!this.parent) return;
+
+    var from = 'M' + this.parent.x + ',' + (this.parent.y + (this.text.getBBox().height / 2) + Tree.padding_bottom);
+    var to = 'L' + this.x + ',' + (this.y - this.text.getBBox().height - Tree.padding_top);
+    App.R.path(from + to);
+};
+
 /* Traverse the tree post-order, set the location of each children according to
  * the step value found in set_width */
 Node.prototype.assign_location = function(x, y) {
-    this.x = x;
-    this.y = y;
+    this.x = Math.floor(x) + 0.5;
+    this.y = Math.floor(y) + 0.5;
 
     this.text.transform(['T' + x + ',' + y]);
 
