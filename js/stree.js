@@ -16,6 +16,7 @@ App = {
         });
     },
     log: function(msg) {
+        msg = msg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         $('#log').append(msg + '<br/>');
     },
 };
@@ -156,7 +157,7 @@ Node.prototype.relate = function(parent) {
 };
 
 function parse(s) {
-    App.log('Parsing <i>' + s + '</i>');
+    App.log('Parsing ' + s);
     var n = new Node();
 
     if (s[0] != '[') {
