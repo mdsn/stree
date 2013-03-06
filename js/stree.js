@@ -90,12 +90,12 @@ function text_element(n) {
 
 /* Get the y coordinate over this node */
 Node.prototype.top_y = function() {
-    return this.y - (this.text.getBBox().height / 2) - Tree.padding_top;
+    return Math.floor(this.y - (this.text.getBBox().height / 2) - Tree.padding_top) + 0.5;
 };
 
 /* Get the y coordinate under this node */
 Node.prototype.bottom_y = function() {
-    return this.y + (this.text.getBBox().height / 2) + Tree.padding_bottom;
+    return Math.floor(this.y + (this.text.getBBox().height / 2) + Tree.padding_bottom) + 0.5;
 };
 
 /* Mark nodes under a triangle */
