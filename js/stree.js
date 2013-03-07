@@ -50,6 +50,9 @@ function Node() {
 
     this.caret = null; /* true if the element has a caret indicating a triangle */
     this.draw_triangle = null; /* true if this is the child of a caret node */
+
+    this.head_chain = null;
+    this.tail_chain = null;
     this.tail = null;
     this.label = null;
 
@@ -115,6 +118,33 @@ Node.prototype.assign_location = function(x, y) {
         var left_start = x - (this.step * (this.children.length-1) / 2);
         for (var i = 0; i < this.children.length; i++)
             this.children[i].assign_location(left_start + i*(this.step), y + Tree.v_space);
+    }
+};
+
+/* Search for the node with the corresponding label (_l) */
+Node.prototype.find_head = function(label) {
+    for (var child = this.first; child != null; child = child.next) {
+        var head = child.find_head(label);
+        if (head != null) 
+            return head;
+    }
+
+    if (this.label == label)
+        return this;
+    return null;
+};
+
+/* Traverse the tree searching for nodes marked as tails (<label>), and create
+ * movements connecting them with the corresponding heads, if any */
+Node.prototype.find_movements = function(movs, root) {
+    for (var child = this.first; child != null; child = child.next)
+        child.find_movements(movs, root);
+
+    if (this.tail != null) {
+        var m = new Movement;
+        m.tail = this;
+        m.head = root.find_head(this.tail);
+        movs.push(m);
     }
 };
 
@@ -186,6 +216,112 @@ Node.prototype.relate = function(parent) {
         this.children[i].previous = this.children[i-1];
 };
 
+Node.prototype.reset_chains = function() {
+    this.head_chain = null;
+    this.tail_chain = null;
+
+    for (var child = this.first; child != null; child = child.next)
+        child.reset_chains();
+};
+
+/* Jumps branches to the right or left searching for the head or tail chain
+ * to get the y value. If it's not there, goes one level up in the tree */
+Node.prototype.find_intervening_height = function(leftwards) {
+    var y = this.y,
+        n = this;
+
+    /* Search for the tail or head chain in this depth of the tree */
+    while (true) {
+        n = (leftwards) ? n.previous : n.next;
+        if (!n) break;
+        if ((n.head_chain) || (n.tail_chain)) return y;
+        y = Math.max(y, n.max_y);
+    }
+
+    /* The tail wasn't in this level, go one level up */
+    y = Math.max(y, this.parent.find_intervening_height(leftwards));
+    return y;
+};
+
+function Movement() {
+    this.head = null;
+    this.tail = null;
+    this.should_draw = null;
+    this.lca = null;
+    this.dest_x = null;
+    this.dest_y = null;
+    this.bottom_y = null;
+    this.max_y = null;
+    this.leftwards = null;
+};
+
+Movement.prototype.set_up = function() {
+    this.should_draw = 0;
+    if ((this.tail == null) || (this.head == null)) return;
+
+    /* Check that head is parent of tail */
+    if (this.head_is_ancestor()) return;
+
+    /* Find the least common ancestor */
+    this.find_lca();
+    if (this.lca == null) return;
+
+    this.find_intervening_height();
+
+    this.dest_x = this.head.x;
+    this.dest_y = this.head.max_y; /* Draw to the bottom of the head branch */
+    this.bottom_y = this.max_y + Tree.v_space;
+    this.should_draw = true;
+    return;
+};
+
+/* Goes up from the tail to check if the head is its ancestor.
+ * Builds the tail chain on the process. */
+Movement.prototype.head_is_ancestor = function() {
+    var n = this.tail;
+    n.tail_chain = 1;
+    while (n.parent != null) {
+        n = n.parent;
+        if (n == this.head) return true;
+        n.tail_chain = 1;
+    }
+    return false;
+};
+
+/* Goes up the tree from the *head* until it hits tail chain. 
+ * When it does, that's the least common ancestor.
+ * Builds the head chain on the process */
+Movement.prototype.find_lca = function() {
+    var n = this.head;
+    n.head_chain = 1;
+    this.lca = null;
+    while (n.parent != null) {
+        n = n.parent;
+        n.head_chain = 1;
+        if (n.tail_chain) {
+            this.lca = n;
+            break;
+        }
+    }
+};
+
+/* Check the direction the movement arrow is going and find the greatest
+ * y value involved in the movement. */
+Movement.prototype.find_intervening_height = function() {
+    /* The first chain from the lca defines the direction of the movement */
+    for (var child = this.lca.first; child != null; child = child.next) {
+        if ((child.head_chain) || (child.tail_chain)) {
+            this.leftwards = false;
+            if (child.head_chain) this.leftwards = true;
+            break;
+        }
+    }
+
+    this.max_y = Math.max(this.tail.find_intervening_height(this.leftwards),
+                          this.head.find_intervening_height(!this.leftwards),
+                          this.head.max_y);
+};
+
 function syntax_tree(s) {
     var t = parse(s);
     t.relate(null);
@@ -201,8 +337,15 @@ function syntax_tree(s) {
     t.set_width();
     t.assign_location(0, 0);
     t.find_height();
-    t.draw_tree_lines();
+    
+    var movement_lines = new Array();
+    t.find_movements(movement_lines, t);
+    for (var i = 0; i < movement_lines.length; i++) {
+        t.reset_chains();
+        movement_lines[i].set_up();
+    }
 
+    t.draw_tree_lines();
     /* Move the entire tree */
     var set = R.setFinish();
     set.translate(t.left_width + Tree.h_space, Tree.v_space);
