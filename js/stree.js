@@ -49,10 +49,11 @@ function Node() {
 
     this.caret = null; /* true if the element has a caret indicating a triangle */
     this.draw_triangle = null; /* true if this is the child of a caret node */
+    this.tail = null;
 
     this.text = null; /* Raphael text element */
     this.value = null;
-    this.parameters = null;
+    this.features = null;
 };
 
 function syntax_tree(s) {
@@ -157,7 +158,7 @@ Node.prototype.set_width = function() {
         child.set_width();
 
     /* As leaf nodes are not affected by children, their width is just
-     * that of its text (TODO: Measure parameters, get max) */
+     * that of its text (TODO: Measure features, get max) */
     if (!this.has_children) {
         this.left_width = text_width / 2;
         this.right_width = text_width / 2;
@@ -214,7 +215,12 @@ function parse(s) {
 
     if (s[0] != '[') {
         s = s.replace(/^\s+|\s+$/g, '');
-        /* Search for parameters on this text node */
+        /* Search for movement information */
+        s = s.replace(/\s*<(\w+)>\s*/, function(match, tail) {
+            n.tail = tail;
+            return ' ';
+        });
+        /* Search for features on this text node */
         var i = 0;
         while ((i < s.length) && (s[i] != '(')) i++;
         n.value = s.substring(0, i); /* Save the text node */
@@ -222,7 +228,7 @@ function parse(s) {
         if (s[i] == '(') {
             var start = i+1;
             while ((s[i] != ')')) i++;
-            n.parameters = s.substring(start, i);
+            n.features = s.substring(start, i);
         }
         return n;
     }
