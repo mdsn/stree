@@ -209,17 +209,37 @@ Node.prototype.relate = function(parent) {
         this.children[i].previous = this.children[i-1];
 };
 
+function subscript(s) {
+    var out = '';
+    for (var i = 0; i < s.length; i++) {
+        switch (s[i]) {
+            case '0': out = out + '₀'; break;
+            case '1': out = out + '₁'; break;
+            case '2': out = out + '₂'; break;
+            case '3': out = out + '₃'; break;
+            case '4': out = out + '₄'; break;
+            case '5': out = out + '₅'; break;
+            case '6': out = out + '₆'; break;
+            case '7': out = out + '₇'; break;
+            case '8': out = out + '₈'; break;
+            case '9': out = out + '₉'; break;
+        }
+    }
+    return out;
+};
+
 function parse(s) {
     App.log('Parsing ' + s);
     var n = new Node();
 
     if (s[0] != '[') {
-        s = s.replace(/^\s+|\s+$/g, '');
         /* Search for movement information */
         s = s.replace(/\s*<(\w+)>\s*/, function(match, tail) {
             n.tail = tail;
+            App.log('Found tail: ' + tail);
             return ' ';
         });
+        s = s.replace(/^\s+|\s+$/g, '');
         /* Search for features on this text node */
         var i = 0;
         while ((i < s.length) && (s[i] != '(')) i++;
@@ -229,6 +249,7 @@ function parse(s) {
             var start = i+1;
             while ((s[i] != ')')) i++;
             n.features = s.substring(start, i);
+            App.log('Parsed features: ' + n.features);
         }
         return n;
     }
@@ -236,10 +257,18 @@ function parse(s) {
     /* Parse the category label */
     var i = 1;
     while ((s[i] != ' ') && (s[i] != '[') && (s[i] != ']')) i++;
-    n.value = s.substring(1, i+1);
+    n.value = s.substring(1, i);
     /* Triangle-parent node */
     n.value = n.value.replace(/\^/, function() {
         n.caret = true;
+        return '';
+    });
+    /* Label */
+    n.value = n.value.replace(/_(\w+)$/, function(match, label) {
+        App.log('Parsed label: ' + label);
+        n.label = label;
+        if (n.label.search(/^\d+$/) != -1)
+            return subscript(n.label);
         return '';
     });
     App.log('Parsed first token: ' + n.value);
