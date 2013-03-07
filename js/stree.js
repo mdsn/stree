@@ -43,6 +43,7 @@ function Node() {
     this.x = null;
     this.y = null;
 
+    this.max_y = null;
     this.child_step = null;
     this.left_width = null;
     this.right_width = null;
@@ -50,43 +51,11 @@ function Node() {
     this.caret = null; /* true if the element has a caret indicating a triangle */
     this.draw_triangle = null; /* true if this is the child of a caret node */
     this.tail = null;
+    this.label = null;
 
     this.text = null; /* Raphael text element */
     this.value = null;
     this.features = null;
-};
-
-function syntax_tree(s) {
-    var t = parse(s);
-    t.relate(null);
-    t.check_triangles();
-
-    if (App.R)
-        App.R.clear();
-    else
-        App.R = new Raphael('canvas-container', 500, 500);
-    var R = App.R;
-    R.setStart();
-
-    t.set_width();
-    t.assign_location(0, 0);
-    t.draw_tree_lines();
-
-    /* Move the entire tree */
-    var set = R.setFinish();
-    set.translate(t.left_width + Tree.h_space, Tree.v_space);
-
-    /* Resize the paper so it can show the entire tree */
-    R.setSize(t.left_width + (2*Tree.h_space) + t.right_width, 500);
-    return t;
-};
-
-function text_element(n) {
-    var text = App.R.text(0, 0, n.value);
-    text.attr({
-        'font-size': 16,
-    });
-    return text;
 };
 
 /* Get the y coordinate over this node */
@@ -149,6 +118,14 @@ Node.prototype.assign_location = function(x, y) {
     }
 };
 
+/* Find the greatest y-position in the tree, to measure its entire height */
+Node.prototype.find_height = function() {
+    this.max_y = this.y;
+    for (var child = this.first; child != null; child = child.next)
+        this.max_y = Math.max(this.max_y, child.find_height());
+    return this.max_y;
+};
+
 /* Traverse the tree post-order, set the space on each side of a node */
 Node.prototype.set_width = function() {
     this.text = text_element(this);
@@ -207,6 +184,40 @@ Node.prototype.relate = function(parent) {
 
     for (var i = 1; i < this.children.length; i++)
         this.children[i].previous = this.children[i-1];
+};
+
+function syntax_tree(s) {
+    var t = parse(s);
+    t.relate(null);
+    t.check_triangles();
+
+    if (App.R)
+        App.R.clear();
+    else
+        App.R = new Raphael('canvas-container', 500, 500);
+    var R = App.R;
+    R.setStart();
+
+    t.set_width();
+    t.assign_location(0, 0);
+    t.find_height();
+    t.draw_tree_lines();
+
+    /* Move the entire tree */
+    var set = R.setFinish();
+    set.translate(t.left_width + Tree.h_space, Tree.v_space);
+
+    /* Resize the paper so it can show the entire tree */
+    R.setSize(t.left_width + (2*Tree.h_space) + t.right_width, t.max_y + (2*Tree.v_space));
+    return t;
+};
+
+function text_element(n) {
+    var text = App.R.text(0, 0, n.value);
+    text.attr({
+        'font-size': 16,
+    });
+    return text;
 };
 
 function subscript(s) {
