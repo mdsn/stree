@@ -24,6 +24,7 @@ App = {
 Tree = {
     h_space: 50, /* Horizontal space between sibling nodes */
     v_space: 60, /* Vertical space between levels */
+    movement_bottom: 45,
     padding_bottom: 5, /* Space below the text for the lines */
     padding_top: 5,
 };
@@ -269,8 +270,9 @@ Movement.prototype.set_up = function() {
     this.find_intervening_height();
 
     this.dest_x = this.head.x;
-    this.dest_y = this.head.max_y; /* Draw to the bottom of the head branch */
-    this.bottom_y = this.max_y + Tree.v_space;
+    /* Draw to the bottom of the head branch */
+    this.dest_y = this.head.max_y + (this.head.text.getBBox().height/2) + Tree.padding_bottom; 
+    this.bottom_y = this.max_y + Tree.movement_bottom;
     this.should_draw = true;
     return;
 };
@@ -322,6 +324,26 @@ Movement.prototype.find_intervening_height = function() {
                           this.head.max_y);
 };
 
+Movement.prototype.draw = function() {
+    var R = App.R;
+
+    var tail_x = this.tail.x;
+    /* Draw the curve in two steps */
+    var from = 'M' + tail_x + ',' + this.tail.bottom_y();
+    var to1 = 'Q' + tail_x + ',' + this.bottom_y + ',' +
+              ((tail_x + this.dest_x) / 2) + ',' + this.bottom_y;
+    var to2 = this.dest_x + ',' + this.bottom_y + ',' +
+              this.dest_x + ',' + this.dest_y;
+    R.path(from + to1 + to2);
+
+    /* Draw the arrow */
+    var from = 'M' + this.dest_x + ',' + this.dest_y;
+    var to3 = 'L' + (this.dest_x + 3) + ',' + (this.dest_y + 10);
+    var to4 = 'H' + (this.dest_x - 3);
+    var to5 = from.replace(/M/, 'L');
+    R.path(from + to3 + to4 + to5).attr({fill: 'black'});
+};
+
 function syntax_tree(s) {
     var t = parse(s);
     t.relate(null);
@@ -346,12 +368,25 @@ function syntax_tree(s) {
     }
 
     t.draw_tree_lines();
+    for (var i = 0; i < movement_lines.length; i++) {
+        if (movement_lines[i].should_draw)
+            movement_lines[i].draw();
+    }
+
     /* Move the entire tree */
     var set = R.setFinish();
     set.translate(t.left_width + Tree.h_space, Tree.v_space);
 
+    /* Control the paper size taking into account the movement lines */
+    var height = t.max_y + (2*Tree.v_space);
+    for (var i = 0; i < movement_lines.length; i++)
+        if (movement_lines[i].max_y == t.max_y) {
+            height += Tree.v_space;
+            break;
+        }
+
     /* Resize the paper so it can show the entire tree */
-    R.setSize(t.left_width + (2*Tree.h_space) + t.right_width, t.max_y + (2*Tree.v_space));
+    R.setSize(t.left_width + (2*Tree.h_space) + t.right_width, height);
     return t;
 };
 
