@@ -12,7 +12,6 @@ App = {
                 return;
             $('#log').empty();
             var tree = syntax_tree(s);
-            1+1==2;
         });
     },
     log: function(msg) {
@@ -22,9 +21,9 @@ App = {
 };
 
 Tree = {
-    h_space: 50, /* Horizontal space between sibling nodes */
-    v_space: 60, /* Vertical space between levels */
-    movement_bottom: 45,
+    h_space: 40, /* Horizontal space between sibling nodes */
+    v_space: 50, /* Vertical space between levels */
+    movement_bottom: 40,
     padding_bottom: 5, /* Space below the text for the lines */
     padding_top: 5,
 };
