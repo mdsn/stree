@@ -26,6 +26,7 @@ Tree = {
     movement_bottom: 40,
     padding_bottom: 5, /* Space below the text for the lines */
     padding_top: 5,
+    font_size: 14,
 };
 
 function Node() {
@@ -56,6 +57,7 @@ function Node() {
     this.tail = null;
     this.label = null;
 
+    this.strikeout = null;
     this.text = null; /* Raphael text element */
     this.value = null;
     this.features = null;
@@ -243,6 +245,17 @@ Node.prototype.find_intervening_height = function(leftwards) {
     return y;
 };
 
+Node.prototype.do_strikeout = function() {
+    for (var child = this.first; child != null; child = child.next)
+        child.do_strikeout();
+
+    if (this.strikeout) {
+        var from = 'M' + (this.x - this.text.getBBox().width/2) + ',' + this.y;
+        var to = 'H' + (this.x + this.text.getBBox().width/2);
+        App.R.path(from + to);
+    }
+};
+
 function Movement() {
     this.head = null;
     this.tail = null;
@@ -357,6 +370,7 @@ function syntax_tree(s) {
 
     t.set_width();
     t.assign_location(0, 0);
+    t.do_strikeout();
     t.find_height();
     
     var movement_lines = new Array();
@@ -392,7 +406,7 @@ function syntax_tree(s) {
 function text_element(n) {
     var text = App.R.text(0, 0, n.value);
     text.attr({
-        'font-size': 16,
+        'font-size': Tree.font_size,
     });
     return text;
 };
@@ -439,6 +453,12 @@ function parse(s) {
             n.features = s.substring(start, i);
             App.log('Parsed features: ' + n.features);
         }
+
+        n.value = n.value.replace(/^-([-\s\w]+)-$/, function(match, text) {
+            n.strikeout = true;
+            return text;
+        });
+
         return n;
     }
 
