@@ -27,7 +27,7 @@ Tree = {
     padding_bottom: 5, /* Space below the text for the lines */
     padding_top: 5,
     font_size: 14,
-    node_text_separation: 7,
+    node_text_separation: 3,
 };
 
 function Node() {
@@ -116,6 +116,9 @@ Node.prototype.assign_location = function(x, y) {
     this.y = Math.floor(y) + 0.5;
 
     this.text.transform(['T' + x + ',' + y]);
+    if (this.features) {
+        this.features_el.transform(['T' + x + ',' + y]);
+    }
 
     /* Treat x = 0 as the center of the canvas because we'll transpose it later */
     if (this.has_children) {
@@ -174,6 +177,7 @@ Node.prototype.draw = function() {
         );
         this.features_el.attr({
             'font-size': Tree.font_size,
+            'font-style': 'italic',
         });
     }
 };
