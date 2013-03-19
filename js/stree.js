@@ -207,7 +207,7 @@ Node.prototype.draw = function() {
         this.features_el = App.R.text(
             0, 
             this.text.getBBox().height + Tree.node_text_separation, 
-            '(' + this.features + ')'
+            '[' + this.features + ']'
         );
         this.features_el.attr({
             'font-size': Tree.font_size,
