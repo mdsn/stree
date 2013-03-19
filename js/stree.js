@@ -27,6 +27,7 @@ Tree = {
     padding_bottom: 5, /* Space below the text for the lines */
     padding_top: 5,
     font_size: 14,
+    node_text_separation: 7,
 };
 
 function Node() {
@@ -59,6 +60,7 @@ function Node() {
 
     this.strikeout = null;
     this.text = null; /* Raphael text element */
+    this.features_el = null;
     this.value = null;
     this.features = null;
 };
@@ -158,9 +160,27 @@ Node.prototype.find_height = function() {
     return this.max_y;
 };
 
+Node.prototype.draw = function() {
+    this.text = App.R.text(0, 0, this.value);
+
+    this.text.attr({
+        'font-size': Tree.font_size,
+    });
+    if (this.features) {
+        this.features_el = App.R.text(
+            0, 
+            this.text.getBBox().height + Tree.node_text_separation, 
+            this.features
+        );
+        this.features_el.attr({
+            'font-size': Tree.font_size,
+        });
+    }
+};
+
 /* Traverse the tree post-order, set the space on each side of a node */
 Node.prototype.set_width = function() {
-    this.text = text_element(this);
+    this.draw();
     var text_width = this.text.getBBox().width;
 
     for (var child = this.first; child != null; child = child.next)
@@ -403,13 +423,6 @@ function syntax_tree(s) {
     return t;
 };
 
-function text_element(n) {
-    var text = App.R.text(0, 0, n.value);
-    text.attr({
-        'font-size': Tree.font_size,
-    });
-    return text;
-};
 
 function subscript(s) {
     var out = '';
