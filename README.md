@@ -10,7 +10,7 @@ Currently implemented features are:
 * Features
 * Element strikeout
 
-![Screenshot](http://raw.github.com/mdsn/stree/master/eg.png "Example")
+![Screenshot](https://raw.github.com/mdsn/stree/master/eg.png "Example")
 
 The idea is to build an UI around this parsing and rendering core so people don't have to deal with the square bracket notation, which gets messy after indenting a couple of levels.
 
