@@ -1,3 +1,7 @@
+// Mariano Casco <muy.poca.fe@gmail.com>
+// http://github.com/mdsn/stree
+// MIT License
+
 App = {
     debug: true,
     R: null,
