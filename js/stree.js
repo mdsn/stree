@@ -72,7 +72,10 @@ Node.prototype.top_y = function() {
 
 /* Get the y coordinate under this node */
 Node.prototype.bottom_y = function() {
-    return Math.floor(this.y + (this.text.getBBox().height / 2) + Tree.padding_bottom) + 0.5;
+    var y = Math.floor(this.y + (this.text.getBBox().height / 2) + Tree.padding_bottom) + 0.5;
+    if (this.features)
+        y += this.features_el.getBBox().height;
+    return y;
 };
 
 /* Mark nodes under a triangle */
@@ -259,6 +262,9 @@ Node.prototype.reset_chains = function() {
 Node.prototype.find_intervening_height = function(leftwards) {
     var y = this.y,
         n = this;
+
+    if (this.features)
+        y += this.features_el.getBBox().height;
 
     /* Search for the tail or head chain in this depth of the tree */
     while (true) {
