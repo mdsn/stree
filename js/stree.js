@@ -1,8 +1,16 @@
 App = {
     debug: true,
     R: null,
+    examples: [
+        "[S [NP_1 -This-] [VP [V is<1>(yabba)] [^NP a wug]]]",
+        "[CP [NP^_1 What] [C' [C_c did] [IP_2 [NP^ you] [I' [I tr<c>] [VP [V' [V eat] tr<1>]]]]]]",
+        "[S [NP [N Alice]] [VP [V is][NP [N' [N a student] [PP^ of physics]]]]]",
+    ],
     init: function() {
         this.bind();
+        this.insert_examples();
+
+        $('#stage').val($('#examples-list li').first().find('a').text());
     },
     bind: function() {
         var that = this;
@@ -12,6 +20,19 @@ App = {
                 return;
             $('#log').empty();
             var tree = syntax_tree(s);
+        });
+        $(document).on('click', '.example-link', function(e) {
+            $('#stage').val($(this).text());
+        });
+    },
+    insert_examples: function() {
+        $.each(this.examples, function(i, eg) {
+            var li = $('<div/>').html('<li><a href="#"></a></li>').children();
+            $(li).find('a')
+                .prop('id', 'example-' + i)
+                .text(eg)
+                .addClass('example-link');
+            $('#examples-list').append(li);
         });
     },
     log: function(msg) {
@@ -26,7 +47,7 @@ Tree = {
     movement_bottom: 40,
     padding_bottom: 5, /* Space below the text for the lines */
     padding_top: 5,
-    font_size: 14,
+    font_size: 18,
     node_text_separation: 3,
 };
 

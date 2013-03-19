@@ -15,6 +15,7 @@
         <link rel="stylesheet" href="css/normalize.css">
         <link rel="stylesheet" href="css/main.css">
         <link rel="stylesheet" href="css/stree.css">
+        <link rel="stylesheet" href="css/bootstrap.min.css">
 
         <script src="js/vendor/modernizr-2.6.2.min.js"></script>
     </head>
@@ -24,23 +25,63 @@
         <![endif]-->
 
         <!-- Add your site or application content here -->
-        <div id="container">
-            <h3>Staging area</h3>
-            <!---<textarea id="stage">[CP [NP^_1 What] [C' [C_b did] [IP_2 [NP^ you] [I' [I tr<b>] [VP [V' [V eat] tr<1>]]]]]]</textarea> -->
-            <textarea id="stage">[S [NP_1 -This-] [VP [V is<1>(yabba)] [^NP a wug]]]</textarea>
-            <!--<textarea id="stage">[S [NP [N Alice]] [VP [V is][NP [N' [N a student] [PP^ of physics]]]]</textarea>-->
-            <button id="parse">parse</button>
+    <div class="container-fluid">
+        <div id="container" class="span5">
+            <h3>The sidebar</h3>
+            <div class="accordion" id="accordion">
+                <div class="accordion-group">
+                    <div class="accordion-heading">
+                        <a class="accordion-toggle" data-toggle="collapse" href="#accordion-stage">Staging area</a>
+                    </div>
+
+                    <div id ="accordion-stage" class="accordion-body collapse in">
+                        <div class="accordion-inner">
+                            <span style="display:block;">
+                            <textarea id="stage" rows="7" class="input-block-level"></textarea>
+                            </span>
+                            <button id="parse" class="btn btn-success"><i class="icon-repeat icon-white"></i> Parse</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-group">
+                    <div class="accordion-heading">
+                        <a class="accordion-toggle" data-toggle="collapse" href="#accordion-examples">Examples</a>
+                    </div>
+
+                    <div id ="accordion-examples" class="accordion-body collapse in">
+                        <div class="accordion-inner">
+                            <ol id="examples-list">
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-group">
+                    <div class="accordion-heading">
+                        <a class="accordion-toggle" data-toggle="collapse" href="#accordion-log">Log</a>
+                    </div>
+
+                    <div id ="accordion-log" class="accordion-body collapse in">
+                        <div class="accordion-inner">
+                            <div id="log"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="span7">
             <h3>Paper</h3>
             <div id="canvas-container"></div>
-            <h3>Log</h3>
-            <div id="log"></div>
         </div>
+    </div>
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.9.0.min.js"><\/script>')</script>
+        <script src="js/bootstrap.min.js"></script>
         <script src="js/plugins.js"></script>
-        <script src="js/main.js"></script>
         <script src="js/raphael-min.js"></script>
+        <script src="js/main.js"></script>
         <script src="js/stree.js"></script>
 
         <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
