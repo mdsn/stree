@@ -158,6 +158,10 @@ Node.prototype.find_movements = function(movs, root) {
 /* Find the greatest y-position in the tree, to measure its entire height */
 Node.prototype.find_height = function() {
     this.max_y = this.y;
+
+    if (this.features)
+        this.max_y += this.features_el.getBBox().height + Tree.node_text_separation;
+
     for (var child = this.first; child != null; child = child.next)
         this.max_y = Math.max(this.max_y, child.find_height());
     return this.max_y;
@@ -308,6 +312,7 @@ Movement.prototype.set_up = function() {
     this.dest_x = this.head.x;
     /* Draw to the bottom of the head branch */
     this.dest_y = this.head.max_y + (this.head.text.getBBox().height/2) + Tree.padding_bottom; 
+
     this.bottom_y = this.max_y + Tree.movement_bottom;
     this.should_draw = true;
     return;
