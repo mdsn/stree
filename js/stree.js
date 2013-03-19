@@ -42,12 +42,14 @@ App = {
 };
 
 Tree = {
+    h_margin: 30,
+    v_margin: 30,
     h_space: 40, /* Horizontal space between sibling nodes */
     v_space: 50, /* Vertical space between levels */
     movement_bottom: 40,
     padding_bottom: 5, /* Space below the text for the lines */
     padding_top: 5,
-    font_size: 18,
+    font_size: 14,
     node_text_separation: 3,
 };
 
@@ -201,7 +203,7 @@ Node.prototype.draw = function() {
         this.features_el = App.R.text(
             0, 
             this.text.getBBox().height + Tree.node_text_separation, 
-            this.features
+            '(' + this.features + ')'
         );
         this.features_el.attr({
             'font-size': Tree.font_size,
@@ -444,18 +446,18 @@ function syntax_tree(s) {
 
     /* Move the entire tree */
     var set = R.setFinish();
-    set.translate(t.left_width + Tree.h_space, Tree.v_space);
+    set.translate(t.left_width + Tree.h_margin, Tree.v_margin);
 
     /* Control the paper size taking into account the movement lines */
     var height = t.max_y + (2*Tree.v_space);
     for (var i = 0; i < movement_lines.length; i++)
         if (movement_lines[i].max_y == t.max_y) {
-            height += Tree.v_space;
+            height += Tree.v_margin;
             break;
         }
 
     /* Resize the paper so it can show the entire tree */
-    R.setSize(t.left_width + (2*Tree.h_space) + t.right_width, height);
+    R.setSize(t.left_width + (2*Tree.h_margin) + t.right_width, height);
     return t;
 };
 
