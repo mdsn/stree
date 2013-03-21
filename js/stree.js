@@ -9,6 +9,7 @@ App = {
         "[S [NP_1 -This-] [VP [V is<1>(yabba)] [^NP a wug]]]",
         "[CP [NP^_1 What] [C' [C_c did] [IP_2 [NP^ you] [I' [I tr<c>] [VP [V' [V eat] tr<1>]]]]]]",
         "[S [NP [N Alice]] [VP [V is][NP [N' [N a student] [PP^ of physics]]]]]",
+        "[SC V(Decl) [STop Cuando [Top' [TP^ lo vi] [ST pro [T' estaba sonriendo [Sv (pro) [v' [v+V -sonreir-] [SV [SA felizmente [A' -mente- [SC como [C' si [SFoc no [Foc' V [ST hubiese [T' pasado [Sv [v+V -pasar-] [SV nada(algo) [V' -pasar- [V'<Locación> V] ] ] ] ] ] ] ] ] ] ] ] [SV [SC -cuando- [ST pro [T' -lo vi- [Sv (pro) [v' [v+V -ver-] [SV -ver- [SD (lo)] ] ] ] ] ] ] [SV (pro) [V' -sonreir-] ] ] ] ] ] ] ] ] ] ]",
     ],
     init: function() {
         this.bind();
@@ -48,8 +49,8 @@ App = {
 Tree = {
     h_margin: 30,
     v_margin: 30,
-    h_space: 40, /* Horizontal space between sibling nodes */
-    v_space: 50, /* Vertical space between levels */
+    h_space: 15, /* Horizontal space between sibling nodes */
+    v_space: 40, /* Vertical space between levels */
     movement_bottom: 40,
     padding_bottom: 5, /* Space below the text for the lines */
     padding_top: 5,
