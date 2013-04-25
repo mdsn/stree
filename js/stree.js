@@ -78,9 +78,11 @@ Tree = {
                 sel_node.box.remove();
                 sel_node = null;
             }
-            var box = elements.getBBox();
 
-            node.box = App.R.rect(floorPt5(box.x), floorPt5(box.y), box.width, box.height);
+            if (App.hoverElement)
+                App.hoverElement.remove();
+
+            node.box = get_rect_box(node);
             node.box.attr({
                 stroke: 'green',
             });
@@ -89,11 +91,13 @@ Tree = {
             elementSelected(node);
         }).hover(
             function(e) {
+                // don't show the hover rectangle if the node is selected
+                if (node.box)
+                    return;
+
                 if (App.hoverElement)
                     App.hoverElement.remove();
-                var box = elements.getBBox();
-                App.hoverElement = App.R.rect(floorPt5(box.x), floorPt5(box.y), 
-                                              box.width, box.height);
+                App.hoverElement = get_rect_box(node);
             },
             function(e) {
                 if (App.hoverElement)
@@ -101,6 +105,13 @@ Tree = {
             }
         );
     },
+};
+
+function get_rect_box(node) {
+    var box = node.elements.getBBox();
+    /* TODO: Fix for stroke-width = 2, looks like shit */
+    return App.R.rect(floorPt5(box.x-3), floorPt5(box.y-3),
+                      box.width+6, box.height+6, 5).attr({'stroke-width': 1});
 };
 
 function syntax_tree(s) {
@@ -188,9 +199,7 @@ function saveSelection() {
     node.elements.exclude(node.box);
     node.box.remove();
 
-    // repeated code
-    var box = node.elements.getBBox();
-    node.box = App.R.rect(floorPt5(box.x), floorPt5(box.y), box.width, box.height);
+    node.box = get_rect_box(node);
     node.box.attr({
         stroke: 'green',
     });

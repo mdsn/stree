@@ -280,11 +280,13 @@ Node.prototype.do_strikeout = function(recurse) {
             child.do_strikeout(recurse);
     }
 
+    /* Remove the line if it's there */
+    if (this.strikeout_element) {
+        this.elements.exclude(this.strikeout_element);
+        this.strikeout_element.remove();
+    }
+
     if (this.strikeout) {
-        if (this.strikeout_element) {
-            this.elements.exclude(this.strikeout_element);
-            this.strikeout_element.remove();
-        }
         var from = 'M' + (this.x - this.text.getBBox().width/2) + ',' + this.y;
         var to = 'H' + (this.x + this.text.getBBox().width/2);
         this.strikeout_element = App.R.path(from + to);
