@@ -148,9 +148,7 @@ Node.prototype.find_height = function() {
 /* Redraw an existing node with updated information and fix the rest of the tree */
 Node.prototype.redraw = function() {
     this.text.attr('text', this.value);
-
-    if (this.features)
-        this.features_el.attr('text', '[' + this.features + ']');
+    this.draw_features();
 
     var root = this.find_root();
     root.set_width();
@@ -158,13 +156,13 @@ Node.prototype.redraw = function() {
     root.do_strikeout(true);
 }
 
-Node.prototype.draw = function(treeSet) {
-    this.elements = App.R.set();
-    this.text = App.R.text(0, 0, this.value);
+/* Draw (or remove) features according to the features property */
+Node.prototype.draw_features = function() {
+    if (this.features_el) {
+        this.elements.exclude(this.features_el);
+        this.features_el.remove()
+    }
 
-    this.text.attr({
-        'font-size': Tree.font_size,
-    });
     if (this.features) {
         this.features_el = App.R.text(
             0, 
@@ -177,6 +175,16 @@ Node.prototype.draw = function(treeSet) {
         });
         this.elements.push(this.features_el);
     }
+};
+
+Node.prototype.draw = function(treeSet) {
+    this.elements = App.R.set();
+    this.text = App.R.text(0, 0, this.value);
+
+    this.text.attr({
+        'font-size': Tree.font_size,
+    });
+    this.draw_features();
     this.elements.push(this.text);
     Tree.bindEvents(this);
     treeSet.push(this.elements);

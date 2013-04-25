@@ -186,7 +186,12 @@ function adjustSize(root, movement_lines) {
 function saveSelection() {
     var node = App.selectedElement;
     node.value = $('#editor-value').val();
-    node.features = $('#editor-features').val();
+    var feats = $('#editor-features').val();
+    if ((!feats)||(feats == ''))
+        node.features = null;
+    else
+        node.features = feats;
+
     node.strikeout = $('#editor-strikeout').prop('checked');
 
     node.redraw();
@@ -205,6 +210,8 @@ function saveSelection() {
     });
 
     node.elements.push(node.box);
+
+    Tree.bindEvents(node);
 };
 
 function elementSelected(node) {
