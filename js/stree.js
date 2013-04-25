@@ -11,6 +11,7 @@ App = {
         "[S [NP [N Alice]] [VP [V is][NP [N' [N a student] [PP^ of physics]]]]]",
         "[SC V(Decl) [STop Cuando [Top' [TP^ lo vi] [ST pro [T' estaba sonriendo [Sv (pro) [v' [v+V -sonreir-] [SV [SA felizmente [A' -mente- [SC como [C' si [SFoc no [Foc' V [ST hubiese [T' pasado [Sv [v+V -pasar-] [SV nada(algo) [V' -pasar- [V'<Locación> V] ] ] ] ] ] ] ] ] ] ] ] [SV [SC -cuando- [ST pro [T' -lo vi- [Sv (pro) [v' [v+V -ver-] [SV -ver- [SD (lo)] ] ] ] ] ] ] [SV (pro) [V' -sonreir-] ] ] ] ] ] ] ] ] ] ]",
     ],
+    hoverElement: null,
     init: function() {
         this.bind();
         this.insert_examples();
@@ -216,9 +217,23 @@ Node.prototype.draw = function(treeSet) {
     }
     this.elements.push(this.text);
 
+    var that = this;
     this.elements.mouseup(function(e) {
         alert("clicked");
-    });
+    }).hover(
+        function(e) {
+            /* Refactor this */
+            if (App.hoverElement)
+                App.hoverElement.remove();
+
+            var box = that.elements.getBBox();
+            App.hoverElement = App.R.rect(box.x, box.y, box.width, box.height);
+        },
+        function(e) {
+            if (App.hoverElement)
+                App.hoverElement.remove();
+        }
+    );
 
     treeSet.push(this.elements);
 };
