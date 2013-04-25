@@ -153,6 +153,16 @@ Node.prototype.redraw = function() {
         this.do_strikeout(false);
         this.strikeout_element.translate(App.tree.left_width + Tree.h_margin, Tree.v_margin);
     }
+
+    if (this.box) {
+        var b = this.elements.getBBox();
+        this.box.attr({
+            x: floorPt5(b.x),
+            y: floorPt5(b.y),
+            width: b.width,
+            height: b.height,
+        });
+    }
 }
 
 Node.prototype.draw = function(treeSet) {
@@ -177,15 +187,17 @@ Node.prototype.draw = function(treeSet) {
     this.elements.push(this.text);
     Tree.bindEvents(this);
     treeSet.push(this.elements);
+
+    for (var child = this.first; child != null; child = child.next)
+        child.draw(treeSet);
 };
 
 /* Traverse the tree post-order, set the space on each side of a node */
-Node.prototype.set_width = function(treeSet) {
-    this.draw(treeSet);
+Node.prototype.set_width = function() {
     var text_width = this.text.getBBox().width;
 
     for (var child = this.first; child != null; child = child.next)
-        child.set_width(treeSet);
+        child.set_width();
 
     /* As leaf nodes are not affected by children, their width is just
      * that of its text (TODO: Measure features, get max) */

@@ -69,16 +69,13 @@ Tree = {
      */
     bindEvents: function(node) {
         var set = node.elements;
-        var f = function(x) {
-            return Math.floor(x) + 0.5;
-        };
         set.mouseup(function(e) {
             if (App.selectedElement) {
                 App.selectedElement.box.remove();
                 App.selectedElement = null;
             }
             var box = set.getBBox();
-            node.box = App.R.rect(f(box.x), f(box.y), box.width, box.height);
+            node.box = App.R.rect(floorPt5(box.x), floorPt5(box.y), box.width, box.height);
             node.box.attr({
                 stroke: 'green',
             });
@@ -89,7 +86,8 @@ Tree = {
                 if (App.hoverElement)
                     App.hoverElement.remove();
                 var box = set.getBBox();
-                App.hoverElement = App.R.rect(f(box.x), f(box.y), box.width, box.height);
+                App.hoverElement = App.R.rect(floorPt5(box.x), floorPt5(box.y), 
+                                              box.width, box.height);
             },
             function(e) {
                 if (App.hoverElement)
@@ -111,7 +109,8 @@ function syntax_tree(s) {
     var R = App.R;
     var treeSet = R.set();
 
-    t.set_width(treeSet);
+    t.draw(treeSet);
+    t.set_width();
     t.assign_location(0, 0);
     t.do_strikeout(true);
     t.find_height();
@@ -152,7 +151,6 @@ function saveSelection() {
     node.strikeout = $('#editor-strikeout').prop('checked');
 
     node.redraw();
-    //node.text.attr('text', node.value);
 };
 
 function elementSelected(node) {
@@ -255,6 +253,9 @@ function parse(s) {
     return n;
 };
 
+function floorPt5(x) {
+    return Math.floor(x) + 0.5;
+};
 
 $(function() {
     App.init();
