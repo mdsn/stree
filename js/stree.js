@@ -227,7 +227,10 @@ Node.prototype.draw = function(treeSet) {
                 App.hoverElement.remove();
 
             var box = that.elements.getBBox();
-            App.hoverElement = App.R.rect(box.x, box.y, box.width, box.height);
+            var f = function(x) {
+                return Math.floor(x) + 0.5;
+            };
+            App.hoverElement = App.R.rect(f(box.x), f(box.y), box.width, box.height);
         },
         function(e) {
             if (App.hoverElement)
