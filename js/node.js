@@ -154,6 +154,7 @@ Node.prototype.redraw = function() {
     root.set_width();
     root.assign_location(0, 0);
     root.do_strikeout(true);
+    root.find_height();
 }
 
 /* Draw (or remove) features according to the features property */
