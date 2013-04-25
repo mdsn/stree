@@ -147,10 +147,13 @@ function saveSelection() {
     var node = App.selectedElement;
     node.value = $('#editor-value').val();
     node.text.attr('text', node.value);
+    node.strikeout = $('#editor-strikeout').prop('checked');
 };
 
 function elementSelected(node) {
     $('#editor-value').val(node.value);
+    $('#editor-features').val(node.features);
+    $('#editor-strikeout').prop('checked', node.strikeout);
 };
 
 function subscript(s) {

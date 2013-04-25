@@ -26,7 +26,7 @@ function Node() {
     this.tail = null;
     this.label = null;
 
-    this.strikeout = null;
+    this.strikeout = false;
     this.text = null; /* Raphael text element */
     this.features_el = null;
     this.value = null;
