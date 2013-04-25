@@ -33,6 +33,7 @@ App = {
         });
         $(document).on('click', '#editor-save', function(e) {
             saveSelection();
+            return false;
         });
     },
     insert_examples: function() {

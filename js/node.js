@@ -143,7 +143,7 @@ Node.prototype.redraw = function() {
     this.text.attr('text', this.value);
 
     if (this.features)
-        this.features_el.attr('text', this.features);
+        this.features_el.attr('text', '[' + this.features + ']');
 
     if ((!this.strikeout) && (this.strikeout_element)) {
         this.strikeout_element.remove();
