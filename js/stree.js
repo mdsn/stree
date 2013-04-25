@@ -118,9 +118,9 @@ Node.prototype.check_triangles = function() {
 
 /* Traverse the tree post-order and draw the lines connecting each node with
  * its parent */
-Node.prototype.draw_tree_lines = function() {
+Node.prototype.draw_tree_lines = function(treeSet) {
     for (var child = this.first; child != null; child = child.next)
-        child.draw_tree_lines();
+        child.draw_tree_lines(treeSet);
 
     /* Do nothing for the root node */
     if (!this.parent) return;
@@ -130,14 +130,14 @@ Node.prototype.draw_tree_lines = function() {
         var to1 = 'L' + (this.x - this.left_width) + ',' + this.top_y();
         var to2 = 'L' + (this.x + this.right_width) + ',' + this.top_y();
         var to3 = from.replace(/M/, 'L');
-        App.R.path(from + to1 + to2 + to3);
+        treeSet.push(App.R.path(from + to1 + to2 + to3));
         return;
     }
 
     /* Regular line to the parent */
     var from = 'M' + this.parent.x + ',' + this.parent.bottom_y();
     var to = 'L' + this.x + ',' + this.top_y();
-    App.R.path(from + to);
+    treeSet.push(App.R.path(from + to));
 };
 
 /* Traverse the tree post-order, set the location of each children according to
@@ -146,10 +146,7 @@ Node.prototype.assign_location = function(x, y) {
     this.x = Math.floor(x) + 0.5;
     this.y = Math.floor(y) + 0.5;
 
-    this.text.transform(['T' + x + ',' + y]);
-    if (this.features) {
-        this.features_el.transform(['T' + x + ',' + y]);
-    }
+    this.elements.transform(['T' + x + ',' + y]);
 
     /* Treat x = 0 as the center of the canvas because we'll transpose it later */
     if (this.has_children) {
@@ -198,7 +195,8 @@ Node.prototype.find_height = function() {
     return this.max_y;
 };
 
-Node.prototype.draw = function() {
+Node.prototype.draw = function(treeSet) {
+    this.elements = App.R.set();
     this.text = App.R.text(0, 0, this.value);
 
     this.text.attr({
@@ -214,16 +212,24 @@ Node.prototype.draw = function() {
             'font-size': Tree.font_size,
             'font-style': 'italic',
         });
+        this.elements.push(this.features_el);
     }
+    this.elements.push(this.text);
+
+    this.elements.mouseup(function(e) {
+        alert("clicked");
+    });
+
+    treeSet.push(this.elements);
 };
 
 /* Traverse the tree post-order, set the space on each side of a node */
-Node.prototype.set_width = function() {
-    this.draw();
+Node.prototype.set_width = function(treeSet) {
+    this.draw(treeSet);
     var text_width = this.text.getBBox().width;
 
     for (var child = this.first; child != null; child = child.next)
-        child.set_width();
+        child.set_width(treeSet);
 
     /* As leaf nodes are not affected by children, their width is just
      * that of its text (TODO: Measure features, get max) */
@@ -307,14 +313,14 @@ Node.prototype.find_intervening_height = function(leftwards) {
     return y;
 };
 
-Node.prototype.do_strikeout = function() {
+Node.prototype.do_strikeout = function(treeSet) {
     for (var child = this.first; child != null; child = child.next)
-        child.do_strikeout();
+        child.do_strikeout(treeSet);
 
     if (this.strikeout) {
         var from = 'M' + (this.x - this.text.getBBox().width/2) + ',' + this.y;
         var to = 'H' + (this.x + this.text.getBBox().width/2);
-        App.R.path(from + to);
+        treeSet.push(App.R.path(from + to));
     }
 };
 
@@ -399,7 +405,7 @@ Movement.prototype.find_intervening_height = function() {
                           this.head.max_y);
 };
 
-Movement.prototype.draw = function() {
+Movement.prototype.draw = function(treeSet) {
     var R = App.R;
 
     var tail_x = this.tail.x;
@@ -409,14 +415,14 @@ Movement.prototype.draw = function() {
               ((tail_x + this.dest_x) / 2) + ',' + this.bottom_y;
     var to2 = this.dest_x + ',' + this.bottom_y + ',' +
               this.dest_x + ',' + this.dest_y;
-    R.path(from + to1 + to2);
+    treeSet.push(R.path(from + to1 + to2));
 
     /* Draw the arrow */
     var from = 'M' + this.dest_x + ',' + this.dest_y;
     var to3 = 'L' + (this.dest_x + 3) + ',' + (this.dest_y + 10);
     var to4 = 'H' + (this.dest_x - 3);
     var to5 = from.replace(/M/, 'L');
-    R.path(from + to3 + to4 + to5).attr({fill: 'black'});
+    treeSet.push(R.path(from + to3 + to4 + to5).attr({fill: 'black'}));
 };
 
 function syntax_tree(s) {
@@ -429,11 +435,11 @@ function syntax_tree(s) {
     else
         App.R = new Raphael('canvas-container', 500, 500);
     var R = App.R;
-    R.setStart();
+    var treeSet = R.set();
 
-    t.set_width();
+    t.set_width(treeSet);
     t.assign_location(0, 0);
-    t.do_strikeout();
+    t.do_strikeout(treeSet);
     t.find_height();
     
     var movement_lines = new Array();
@@ -443,15 +449,14 @@ function syntax_tree(s) {
         movement_lines[i].set_up();
     }
 
-    t.draw_tree_lines();
+    t.draw_tree_lines(treeSet);
     for (var i = 0; i < movement_lines.length; i++) {
         if (movement_lines[i].should_draw)
-            movement_lines[i].draw();
+            movement_lines[i].draw(treeSet);
     }
 
     /* Move the entire tree */
-    var set = R.setFinish();
-    set.translate(t.left_width + Tree.h_margin, Tree.v_margin);
+    treeSet.translate(t.left_width + Tree.h_margin, Tree.v_margin);
 
     /* Control the paper size taking into account the movement lines */
     var height = t.max_y + (2*Tree.v_space);

@@ -1,6 +1,9 @@
 body {
     margin-left:15px;
 }
+#main-container {
+    margin-top: 60px;
+}
 #canvas-container {
     display:inline-block;
     border:1px solid #aaa;
