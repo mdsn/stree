@@ -26,7 +26,9 @@ function Node() {
     this.tail = null;
     this.label = null;
 
+    /* TODO: Move all raphael objects inside some form of container */
     this.strikeout = false;
+    this.strikeout_element = null;
     this.text = null; /* Raphael text element */
     this.features_el = null;
     this.value = null;
@@ -135,6 +137,23 @@ Node.prototype.find_height = function() {
         this.max_y = Math.max(this.max_y, child.find_height());
     return this.max_y;
 };
+
+/* Redraw an existing node with updated information */
+Node.prototype.redraw = function() {
+    this.text.attr('text', this.value);
+
+    if (this.features)
+        this.features_el.attr('text', this.features);
+
+    if ((!this.strikeout) && (this.strikeout_element)) {
+        this.strikeout_element.remove();
+        this.strikeout_element = null;
+    }
+    else if (this.strikeout) {
+        this.do_strikeout(false);
+        this.strikeout_element.translate(App.tree.left_width + Tree.h_margin, Tree.v_margin);
+    }
+}
 
 Node.prototype.draw = function(treeSet) {
     this.elements = App.R.set();
@@ -250,13 +269,16 @@ Node.prototype.find_intervening_height = function(leftwards) {
     return y;
 };
 
-Node.prototype.do_strikeout = function(treeSet) {
-    for (var child = this.first; child != null; child = child.next)
-        child.do_strikeout(treeSet);
+Node.prototype.do_strikeout = function(recurse) {
+    if (recurse) {
+        for (var child = this.first; child != null; child = child.next)
+            child.do_strikeout(recurse);
+    }
 
     if (this.strikeout) {
         var from = 'M' + (this.x - this.text.getBBox().width/2) + ',' + this.y;
         var to = 'H' + (this.x + this.text.getBBox().width/2);
-        treeSet.push(App.R.path(from + to));
+        this.strikeout_element = App.R.path(from + to);
+        this.elements.push(this.strikeout_element);
     }
 };

@@ -4,6 +4,7 @@
 
 App = {
     debug: true,
+    tree: null,
     R: null,
     examples: [
         "[S [NP_1 -This-] [VP [V is<1>(yabba)] [^NP a wug]]]",
@@ -25,7 +26,7 @@ App = {
             if (s == '')
                 return;
             $('#log').empty();
-            var tree = syntax_tree(s);
+            that.tree = syntax_tree(s);
         });
         $(document).on('click', '.example-link', function(e) {
             $('#stage').val($(this).text());
@@ -111,7 +112,7 @@ function syntax_tree(s) {
 
     t.set_width(treeSet);
     t.assign_location(0, 0);
-    t.do_strikeout(treeSet);
+    t.do_strikeout(true);
     t.find_height();
     
     var movement_lines = new Array();
@@ -146,8 +147,11 @@ function syntax_tree(s) {
 function saveSelection() {
     var node = App.selectedElement;
     node.value = $('#editor-value').val();
-    node.text.attr('text', node.value);
+    node.features = $('#editor-features').val();
     node.strikeout = $('#editor-strikeout').prop('checked');
+
+    node.redraw();
+    //node.text.attr('text', node.value);
 };
 
 function elementSelected(node) {
