@@ -50,13 +50,45 @@ App = {
 Tree = {
     h_margin: 30,
     v_margin: 30,
-    h_space: 15, /* Horizontal space between sibling nodes */
-    v_space: 40, /* Vertical space between levels */
+    h_space: 25, /* Horizontal space between sibling nodes */
+    v_space: 45, /* Vertical space between levels */
     movement_bottom: 40,
     padding_bottom: 5, /* Space below the text for the lines */
     padding_top: 5,
     font_size: 14,
     node_text_separation: 3,
+
+    /* Binds the events related to interaction: hover (shows the bounding box
+     * of the entire node), click (should instance the node editor for the
+     * selected node)
+     */
+    bindEvents: function(node) {
+        var set = node.elements;
+        var f = function(x) {
+            return Math.floor(x) + 0.5;
+        };
+        set.mouseup(function(e) {
+            if (App.selectedElement)
+                App.selectedElement.remove();
+            var box = set.getBBox();
+            App.selectedElement = App.R.rect(f(box.x), f(box.y), box.width, box.height);
+            App.selectedElement.attr({
+                stroke: 'green',
+            });
+            elementSelected(node);
+        }).hover(
+            function(e) {
+                if (App.hoverElement)
+                    App.hoverElement.remove();
+                var box = set.getBBox();
+                App.hoverElement = App.R.rect(f(box.x), f(box.y), box.width, box.height);
+            },
+            function(e) {
+                if (App.hoverElement)
+                    App.hoverElement.remove();
+            }
+        );
+    },
 };
 
 function Node() {
@@ -216,28 +248,7 @@ Node.prototype.draw = function(treeSet) {
         this.elements.push(this.features_el);
     }
     this.elements.push(this.text);
-
-    var that = this;
-    this.elements.mouseup(function(e) {
-        alert("clicked");
-    }).hover(
-        function(e) {
-            /* Refactor this */
-            if (App.hoverElement)
-                App.hoverElement.remove();
-
-            var box = that.elements.getBBox();
-            var f = function(x) {
-                return Math.floor(x) + 0.5;
-            };
-            App.hoverElement = App.R.rect(f(box.x), f(box.y), box.width, box.height);
-        },
-        function(e) {
-            if (App.hoverElement)
-                App.hoverElement.remove();
-        }
-    );
-
+    Tree.bindEvents(this);
     treeSet.push(this.elements);
 };
 
@@ -489,6 +500,9 @@ function syntax_tree(s) {
     return t;
 };
 
+function elementSelected(node) {
+    $('#selected-element').text(node.value);
+};
 
 function subscript(s) {
     var out = '';
