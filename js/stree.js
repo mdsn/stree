@@ -30,6 +30,9 @@ App = {
         $(document).on('click', '.example-link', function(e) {
             $('#stage').val($(this).text());
         });
+        $(document).on('click', '#editor-save', function(e) {
+            saveSelection();
+        });
     },
     insert_examples: function() {
         $.each(this.examples, function(i, eg) {
@@ -68,13 +71,16 @@ Tree = {
             return Math.floor(x) + 0.5;
         };
         set.mouseup(function(e) {
-            if (App.selectedElement)
-                App.selectedElement.remove();
+            if (App.selectedElement) {
+                App.selectedElement.box.remove();
+                App.selectedElement = null;
+            }
             var box = set.getBBox();
-            App.selectedElement = App.R.rect(f(box.x), f(box.y), box.width, box.height);
-            App.selectedElement.attr({
+            node.box = App.R.rect(f(box.x), f(box.y), box.width, box.height);
+            node.box.attr({
                 stroke: 'green',
             });
+            App.selectedElement = node;
             elementSelected(node);
         }).hover(
             function(e) {
@@ -137,8 +143,14 @@ function syntax_tree(s) {
     return t;
 };
 
+function saveSelection() {
+    var node = App.selectedElement;
+    node.value = $('#editor-value').val();
+    node.text.attr('text', node.value);
+};
+
 function elementSelected(node) {
-    $('#selected-element').text(node.value);
+    $('#editor-value').val(node.value);
 };
 
 function subscript(s) {

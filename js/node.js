@@ -31,6 +31,7 @@ function Node() {
     this.features_el = null;
     this.value = null;
     this.features = null;
+    this.box = null;
 };
 
 /* Get the y coordinate over this node */
