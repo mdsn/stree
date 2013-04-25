@@ -59,6 +59,13 @@ Node.prototype.check_triangles = function() {
         child.check_triangles();
 };
 
+/* Find root node */
+Node.prototype.find_root = function() {
+    if (this.parent)
+        return this.parent.find_root();
+    return this;
+};
+
 /* Traverse the tree post-order and draw the lines connecting each node with
  * its parent */
 Node.prototype.draw_tree_lines = function(treeSet) {
@@ -138,31 +145,17 @@ Node.prototype.find_height = function() {
     return this.max_y;
 };
 
-/* Redraw an existing node with updated information */
+/* Redraw an existing node with updated information and fix the rest of the tree */
 Node.prototype.redraw = function() {
     this.text.attr('text', this.value);
 
     if (this.features)
         this.features_el.attr('text', '[' + this.features + ']');
 
-    if ((!this.strikeout) && (this.strikeout_element)) {
-        this.strikeout_element.remove();
-        this.strikeout_element = null;
-    }
-    else if (this.strikeout) {
-        this.do_strikeout(false);
-        this.strikeout_element.translate(App.tree.left_width + Tree.h_margin, Tree.v_margin);
-    }
-
-    if (this.box) {
-        var b = this.elements.getBBox();
-        this.box.attr({
-            x: floorPt5(b.x),
-            y: floorPt5(b.y),
-            width: b.width,
-            height: b.height,
-        });
-    }
+    var root = this.find_root();
+    root.set_width();
+    root.assign_location(0, 0);
+    root.do_strikeout(true);
 }
 
 Node.prototype.draw = function(treeSet) {
@@ -288,9 +281,14 @@ Node.prototype.do_strikeout = function(recurse) {
     }
 
     if (this.strikeout) {
+        if (this.strikeout_element) {
+            this.elements.exclude(this.strikeout_element);
+            this.strikeout_element.remove();
+        }
         var from = 'M' + (this.x - this.text.getBBox().width/2) + ',' + this.y;
         var to = 'H' + (this.x + this.text.getBBox().width/2);
         this.strikeout_element = App.R.path(from + to);
         this.elements.push(this.strikeout_element);
     }
 };
+

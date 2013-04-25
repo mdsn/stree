@@ -4,7 +4,9 @@
 
 App = {
     debug: true,
-    tree: null,
+    tree: null, // root of the Node tree (model)
+    linesSet: null, // set of raphael JS line elements
+    treeSet: null, // set of raphael JS text elements (view?)
     R: null,
     examples: [
         "[S [NP_1 -This-] [VP [V is<1>(yabba)] [^NP a wug]]]",
@@ -68,24 +70,28 @@ Tree = {
      * selected node)
      */
     bindEvents: function(node) {
-        var set = node.elements;
-        set.mouseup(function(e) {
-            if (App.selectedElement) {
-                App.selectedElement.box.remove();
-                App.selectedElement = null;
+        var elements = node.elements;
+        elements.mouseup(function(e) {
+            var sel_node = App.selectedElement;
+            if (sel_node) {
+                sel_node.elements.exclude(sel_node.box);
+                sel_node.box.remove();
+                sel_node = null;
             }
-            var box = set.getBBox();
+            var box = elements.getBBox();
+
             node.box = App.R.rect(floorPt5(box.x), floorPt5(box.y), box.width, box.height);
             node.box.attr({
                 stroke: 'green',
             });
-            App.selectedElement = node;
+
+            node.elements.push(node.box);
             elementSelected(node);
         }).hover(
             function(e) {
                 if (App.hoverElement)
                     App.hoverElement.remove();
-                var box = set.getBBox();
+                var box = elements.getBBox();
                 App.hoverElement = App.R.rect(floorPt5(box.x), floorPt5(box.y), 
                                               box.width, box.height);
             },
@@ -107,41 +113,63 @@ function syntax_tree(s) {
     else
         App.R = new Raphael('canvas-container', 500, 500);
     var R = App.R;
-    var treeSet = R.set();
+    App.treeSet = R.set();
+    var treeSet = App.treeSet;
 
     t.draw(treeSet);
     t.set_width();
     t.assign_location(0, 0);
     t.do_strikeout(true);
     t.find_height();
+
+    var movement_lines = handleMovementLines(t);
+    adjustSize(t, movement_lines);
+    return t;
+};
     
+function handleMovementLines(root) {
     var movement_lines = new Array();
-    t.find_movements(movement_lines, t);
+    root.find_movements(movement_lines, root);
     for (var i = 0; i < movement_lines.length; i++) {
-        t.reset_chains();
+        root.reset_chains();
         movement_lines[i].set_up();
     }
 
-    t.draw_tree_lines(treeSet);
-    for (var i = 0; i < movement_lines.length; i++) {
-        if (movement_lines[i].should_draw)
-            movement_lines[i].draw(treeSet);
+    /* In the future this should probably try and reuse the
+     * already created elements. Node.prototype.find_movements could 
+     * store the Movement object in the node. */
+    if (App.linesSet) {
+        App.linesSet.forEach(function(el) {
+            el.remove();
+        });
     }
 
-    /* Move the entire tree */
-    treeSet.translate(t.left_width + Tree.h_margin, Tree.v_margin);
+    App.linesSet = App.R.set();
+    root.draw_tree_lines(App.linesSet);
+    for (var i = 0; i < movement_lines.length; i++) {
+        if (movement_lines[i].should_draw)
+            movement_lines[i].draw(App.linesSet);
+    }
+
+    return movement_lines;
+};
+
+/* Move the entire tree */
+function adjustSize(root, movement_lines) {
+    $.each([App.linesSet, App.treeSet], function(i, s) {
+        s.translate(root.left_width + Tree.h_margin, Tree.v_margin);
+    });
 
     /* Control the paper size taking into account the movement lines */
-    var height = t.max_y + (2*Tree.v_space);
+    var height = root.max_y + (2*Tree.v_space);
     for (var i = 0; i < movement_lines.length; i++)
-        if (movement_lines[i].max_y == t.max_y) {
+        if (movement_lines[i].max_y == root.max_y) {
             height += Tree.v_margin;
             break;
         }
 
     /* Resize the paper so it can show the entire tree */
-    R.setSize(t.left_width + (2*Tree.h_margin) + t.right_width, height);
-    return t;
+    App.R.setSize(root.left_width + (2*Tree.h_margin) + root.right_width, height);
 };
 
 function saveSelection() {
@@ -151,9 +179,27 @@ function saveSelection() {
     node.strikeout = $('#editor-strikeout').prop('checked');
 
     node.redraw();
+
+    var root = node.find_root();
+    var movements = handleMovementLines(root);
+    adjustSize(root, movements);
+
+    // select box
+    node.elements.exclude(node.box);
+    node.box.remove();
+
+    // repeated code
+    var box = node.elements.getBBox();
+    node.box = App.R.rect(floorPt5(box.x), floorPt5(box.y), box.width, box.height);
+    node.box.attr({
+        stroke: 'green',
+    });
+
+    node.elements.push(node.box);
 };
 
 function elementSelected(node) {
+    App.selectedElement = node;
     $('#editor-value').val(node.value);
     $('#editor-features').val(node.features);
     $('#editor-strikeout').prop('checked', node.strikeout);
