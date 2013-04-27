@@ -75,19 +75,22 @@ Node.prototype.draw_tree_lines = function(treeSet) {
     /* Do nothing for the root node */
     if (!this.parent) return;
 
+    var path = '';
     if (this.draw_triangle) {
         var from = 'M' + this.parent.x + ',' + this.parent.bottom_y();
         var to1 = 'L' + (this.x - this.left_width) + ',' + this.top_y();
         var to2 = 'L' + (this.x + this.right_width) + ',' + this.top_y();
         var to3 = from.replace(/M/, 'L');
-        treeSet.push(App.R.path(from + to1 + to2 + to3));
-        return;
+        path = from + to1 + to2 + to3;
+    }
+    else {
+        /* Regular line to the parent */
+        var from = 'M' + this.parent.x + ',' + this.parent.bottom_y();
+        var to = 'L' + this.x + ',' + this.top_y();
+        path = from + to;
     }
 
-    /* Regular line to the parent */
-    var from = 'M' + this.parent.x + ',' + this.parent.bottom_y();
-    var to = 'L' + this.x + ',' + this.top_y();
-    treeSet.push(App.R.path(from + to));
+    treeSet.push(App.R.path(path));
 };
 
 /* Traverse the tree post-order, set the location of each children according to
