@@ -26,26 +26,29 @@ function Node() {
     this.tail = null;
     this.label = null;
 
-    /* TODO: Move all raphael objects inside some form of container */
-    this.strikeout = false;
-    this.strikeout_element = null;
-    this.text = null; /* Raphael text element */
-    this.features_el = null;
     this.value = null;
     this.features = null;
-    this.box = null;
+    this.strikeout = false;
+
+    /* TODO: Move all raphael objects inside some form of container */
+    this.view = {
+        strikeout : null,
+        text : null,  /* Raphael text element */
+        features : null,
+        box : null,  /* Selection box */
+    }
 };
 
 /* Get the y coordinate over this node */
 Node.prototype.top_y = function() {
-    return Math.floor(this.y - (this.text.getBBox().height / 2) - Tree.padding_top) + 0.5;
+    return Math.floor(this.y - (this.view.text.getBBox().height / 2) - Tree.padding_top) + 0.5;
 };
 
 /* Get the y coordinate under this node */
 Node.prototype.bottom_y = function() {
-    var y = Math.floor(this.y + (this.text.getBBox().height / 2) + Tree.padding_bottom) + 0.5;
+    var y = Math.floor(this.y + (this.view.text.getBBox().height / 2) + Tree.padding_bottom) + 0.5;
     if (this.features)
-        y += this.features_el.getBBox().height;
+        y += this.view.features.getBBox().height;
     return y;
 };
 
@@ -141,7 +144,7 @@ Node.prototype.find_height = function() {
     this.max_y = this.y;
 
     if (this.features)
-        this.max_y += this.features_el.getBBox().height + Tree.node_text_separation;
+        this.max_y += this.view.features.getBBox().height + Tree.node_text_separation;
 
     for (var child = this.first; child != null; child = child.next)
         this.max_y = Math.max(this.max_y, child.find_height());
@@ -158,41 +161,41 @@ Node.prototype.redraw_tree = function() {
 
 /* Redraw an existing node with updated information and fix the rest of the tree */
 Node.prototype.redraw = function() {
-    this.text.attr('text', this.value);
+    this.view.text.attr('text', this.value);
     this.draw_features();
     this.redraw_tree();
 };
 
 /* Draw (or remove) features according to the features property */
 Node.prototype.draw_features = function() {
-    if (this.features_el) {
-        this.elements.exclude(this.features_el);
-        this.features_el.remove()
+    if (this.view.features) {
+        this.elements.exclude(this.view.features);
+        this.view.features.remove()
     }
 
     if (this.features) {
-        this.features_el = App.R.text(
+        this.view.features = App.R.text(
             0, 
-            this.text.getBBox().height + Tree.node_text_separation, 
+            this.view.text.getBBox().height + Tree.node_text_separation, 
             '[' + this.features + ']'
         );
-        this.features_el.attr({
+        this.view.features.attr({
             'font-size': Tree.font_size,
             'font-style': 'italic',
         });
-        this.elements.push(this.features_el);
+        this.elements.push(this.view.features);
     }
 };
 
 Node.prototype.draw = function(treeSet) {
     this.elements = App.R.set();
-    this.text = App.R.text(0, 0, this.value);
+    this.view.text = App.R.text(0, 0, this.value);
 
-    this.text.attr({
+    this.view.text.attr({
         'font-size': Tree.font_size,
     });
     this.draw_features();
-    this.elements.push(this.text);
+    this.elements.push(this.view.text);
     Tree.bindEvents(this);
     treeSet.push(this.elements);
 
@@ -202,7 +205,7 @@ Node.prototype.draw = function(treeSet) {
 
 /* Traverse the tree post-order, set the space on each side of a node */
 Node.prototype.set_width = function() {
-    var text_width = this.text.getBBox().width;
+    var text_width = this.view.text.getBBox().width;
 
     for (var child = this.first; child != null; child = child.next)
         child.set_width();
@@ -274,7 +277,7 @@ Node.prototype.find_intervening_height = function(leftwards) {
         n = this;
 
     if (this.features)
-        y += this.features_el.getBBox().height;
+        y += this.view.features.getBBox().height;
 
     /* Search for the tail or head chain in this depth of the tree */
     while (true) {
@@ -296,16 +299,16 @@ Node.prototype.do_strikeout = function(recurse) {
     }
 
     /* Remove the line if it's there */
-    if (this.strikeout_element) {
-        this.elements.exclude(this.strikeout_element);
-        this.strikeout_element.remove();
+    if (this.view.strikeout) {
+        this.elements.exclude(this.view.strikeout);
+        this.view.strikeout.remove();
     }
 
     if (this.strikeout) {
-        var from = 'M' + (this.x - this.text.getBBox().width/2) + ',' + this.y;
-        var to = 'H' + (this.x + this.text.getBBox().width/2);
-        this.strikeout_element = App.R.path(from + to);
-        this.elements.push(this.strikeout_element);
+        var from = 'M' + (this.x - this.view.text.getBBox().width/2) + ',' + this.y;
+        var to = 'H' + (this.x + this.view.text.getBBox().width/2);
+        this.view.strikeout = App.R.path(from + to);
+        this.elements.push(this.view.strikeout);
     }
 };
 

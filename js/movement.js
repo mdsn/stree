@@ -25,7 +25,7 @@ Movement.prototype.set_up = function() {
 
     this.dest_x = this.head.x;
     /* Draw to the bottom of the head branch */
-    this.dest_y = this.head.max_y + (this.head.text.getBBox().height/2) + Tree.padding_bottom; 
+    this.dest_y = this.head.max_y + (this.head.view.text.getBBox().height/2) + Tree.padding_bottom; 
 
     this.bottom_y = this.max_y + Tree.movement_bottom;
     this.should_draw = true;

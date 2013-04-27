@@ -74,25 +74,25 @@ Tree = {
         elements.mouseup(function(e) {
             var sel_node = App.selectedElement;
             if (sel_node) {
-                sel_node.elements.exclude(sel_node.box);
-                sel_node.box.remove();
+                sel_node.elements.exclude(sel_node.view.box);
+                sel_node.view.box.remove();
                 sel_node = null;
             }
 
             if (App.hoverElement)
                 App.hoverElement.remove();
 
-            node.box = get_rect_box(node);
-            node.box.attr({
+            node.view.box = get_rect_box(node);
+            node.view.box.attr({
                 stroke: 'green',
             });
 
-            node.elements.push(node.box);
+            node.elements.push(node.view.box);
             elementSelected(node);
         }).hover(
             function(e) {
                 // don't show the hover rectangle if the node is selected
-                if (node.box)
+                if (node.view.box)
                     return;
 
                 if (App.hoverElement)
@@ -201,15 +201,15 @@ function saveSelection() {
     adjustSize(root, movements);
 
     // select box
-    node.elements.exclude(node.box);
-    node.box.remove();
+    node.elements.exclude(node.view.box);
+    node.view.box.remove();
 
-    node.box = get_rect_box(node);
-    node.box.attr({
+    node.view.box = get_rect_box(node);
+    node.view.box.attr({
         stroke: 'green',
     });
 
-    node.elements.push(node.box);
+    node.elements.push(node.view.box);
 
     Tree.bindEvents(node);
 };
