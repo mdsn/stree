@@ -145,17 +145,20 @@ Node.prototype.find_height = function() {
     return this.max_y;
 };
 
-/* Redraw an existing node with updated information and fix the rest of the tree */
-Node.prototype.redraw = function() {
-    this.text.attr('text', this.value);
-    this.draw_features();
-
+Node.prototype.redraw_tree = function() {
     var root = this.find_root();
     root.set_width();
     root.assign_location(0, 0);
     root.do_strikeout(true);
     root.find_height();
-}
+};
+
+/* Redraw an existing node with updated information and fix the rest of the tree */
+Node.prototype.redraw = function() {
+    this.text.attr('text', this.value);
+    this.draw_features();
+    this.redraw_tree();
+};
 
 /* Draw (or remove) features according to the features property */
 Node.prototype.draw_features = function() {
