@@ -252,6 +252,16 @@ Node.prototype.draw = function(treeSet) {
         child.draw(treeSet);
 };
 
+Node.prototype.to_left = function() {
+    if (this.previous) {
+        var hold = this.previous;
+        var i = this.parent.children.indexOf(this);
+        this.parent.children[i] = hold;
+        this.parent.children[i-1] = this;
+        this.parent.relate(this.parent.parent);
+    }
+};
+
 /* Traverse the tree post-order, set the space on each side of a node */
 Node.prototype.set_width = function() {
     var text_width = this.view.text.getBBox().width;
@@ -303,22 +313,20 @@ Node.prototype.relate = function(parent) {
     else {
         this.first = null;
         this.last = null;
+        return;
     }
 
     for (var i = 0; i < this.children.length; i++)
         this.children[i].relate(this);
 
-    if (this.children.length == 1) {
-        this.first.next = null;
-        this.first.previous = null;
-    }
-    else {
-        for (var i = 0; i < this.children.length - 1; i++)
-            this.children[i].next = this.children[i+1];
+    this.first.previous = null;
+    this.last.next = null;
 
-        for (var i = 1; i < this.children.length; i++)
-            this.children[i].previous = this.children[i-1];
-    }
+    for (var i = 0; i < this.children.length - 1; i++)
+        this.children[i].next = this.children[i+1];
+
+    for (var i = 1; i < this.children.length; i++)
+        this.children[i].previous = this.children[i-1];
 };
 
 Node.prototype.reset_chains = function() {

@@ -51,6 +51,16 @@ App = {
             }
             return false;
         });
+        /* Swap to the left */
+        $(document).on('click', '#editor-node-left', function(e) {
+            var node = App.selectedElement;
+            if ((node) && (node.parent)) {
+                node.to_left();
+                node.redraw_tree();
+                elementSelected(node);
+            }
+            return false;
+        });
         $(document).on('click', '.example-link', function(e) {
             $('#stage').val($(this).text());
         });
