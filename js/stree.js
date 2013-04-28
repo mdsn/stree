@@ -198,6 +198,8 @@ function saveSelection() {
         node.features = feats;
 
     node.strikeout = $('#editor-strikeout').prop('checked');
+    if ((node.parent) && (node.parent.children.length == 1))
+        node.parent.caret = $('#editor-triangle').prop('checked');
 
     node.redraw_tree();
 
@@ -241,6 +243,7 @@ function elementSelected(node) {
     $('#editor-value').val(node.value);
     $('#editor-features').val(node.features);
     $('#editor-strikeout').prop('checked', node.strikeout);
+    $('#editor-triangle').prop('checked', ((node.parent) && (node.parent.caret)));
 };
 
 function subscript(s) {
