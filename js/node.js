@@ -39,6 +39,21 @@ function Node() {
     }
 };
 
+Node.prototype.add_child = function(node) {
+    if (!node) {
+        node = new Node();
+        node.value = 'Node';
+    }
+    node.parent = this;
+    this.children.push(node);
+    if (this.has_children) {
+        node.previous = this.last;
+        node.previous.next = node;
+        this.last = node;
+    }
+    return node;
+};
+
 /* Get the y coordinate over this node */
 Node.prototype.top_y = function() {
     return Math.floor(this.y - (this.view.text.getBBox().height / 2) - Tree.padding_top) + 0.5;
@@ -153,17 +168,15 @@ Node.prototype.find_height = function() {
 
 Node.prototype.redraw_tree = function() {
     var root = this.find_root();
+    if (App.treeSet) {
+        root.draw(App.treeSet);
+    }
     root.set_width();
     root.assign_location(0, 0);
     root.do_strikeout(true);
     root.find_height();
-};
-
-/* Redraw an existing node with updated information and fix the rest of the tree */
-Node.prototype.redraw = function() {
-    this.view.text.attr('text', this.value);
-    this.draw_features();
-    this.redraw_tree();
+    var movements = handleMovementLines(root);
+    adjustSize(root, movements);
 };
 
 /* Draw (or remove) features according to the features property */
@@ -188,16 +201,20 @@ Node.prototype.draw_features = function() {
 };
 
 Node.prototype.draw = function(treeSet) {
-    this.elements = App.R.set();
-    this.view.text = App.R.text(0, 0, this.value);
+    if (!this.elements)
+        this.elements = App.R.set();
 
-    this.view.text.attr({
-        'font-size': Tree.font_size,
-    });
+    if (!this.view.text) {
+        this.view.text = App.R.text(0, 0, this.value);
+        this.view.text.attr({
+            'font-size': Tree.font_size,
+        });
+        this.elements.push(this.view.text);
+        Tree.bindEvents(this);
+        treeSet.push(this.elements);
+    }
+    this.view.text.attr('text', this.value);
     this.draw_features();
-    this.elements.push(this.view.text);
-    Tree.bindEvents(this);
-    treeSet.push(this.elements);
 
     for (var child = this.first; child != null; child = child.next)
         child.draw(treeSet);

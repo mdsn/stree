@@ -15,6 +15,7 @@ App = {
         "[SC V(Decl) [STop Cuando [Top' [TP^ lo vi] [ST pro [T' estaba sonriendo [Sv (pro) [v' [v+V -sonreir-] [SV [SA felizmente [A' -mente- [SC como [C' si [SFoc no [Foc' V [ST hubiese [T' pasado [Sv [v+V -pasar-] [SV nada(algo) [V' -pasar- [V'<Locación> V] ] ] ] ] ] ] ] ] ] ] ] [SV [SC -cuando- [ST pro [T' -lo vi- [Sv (pro) [v' [v+V -ver-] [SV -ver- [SD (lo)] ] ] ] ] ] ] [SV (pro) [V' -sonreir-] ] ] ] ] ] ] ] ] ] ]",
     ],
     hoverElement: null,
+    selectedElement: null,
     init: function() {
         this.bind();
         this.insert_examples();
@@ -29,6 +30,14 @@ App = {
                 return;
             $('#log').empty();
             that.tree = syntax_tree(s);
+        });
+        /* TODO: factor out edit events */
+        $(document).on('click', '#editor-add-child', function(e) {
+            if (App.selectedElement) {
+                var node = App.selectedElement.add_child(null);
+                node.redraw_tree();
+            }
+            return false;
         });
         $(document).on('click', '.example-link', function(e) {
             $('#stage').val($(this).text());
@@ -194,11 +203,7 @@ function saveSelection() {
 
     node.strikeout = $('#editor-strikeout').prop('checked');
 
-    node.redraw();
-
-    var root = node.find_root();
-    var movements = handleMovementLines(root);
-    adjustSize(root, movements);
+    node.redraw_tree();
 
     // select box
     node.elements.exclude(node.view.box);
