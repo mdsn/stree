@@ -79,6 +79,12 @@ App = {
             return false;
         });
     },
+
+    clearEditForm: function() {
+        $('#editor-triangle, #editor-strikeout').attr('checked', false);
+        $('#editor-value, #editor-features').val('');
+    },
+
     insert_examples: function() {
         $.each(this.examples, function(i, eg) {
             var li = $('<div/>').html('<li><a href="#"></a></li>').children();
@@ -106,29 +112,33 @@ Tree = {
     font_size: 14,
     node_text_separation: 3,
 
+    /* These three functions receive the node as their context */
+    hIn : function(e) {
+        // don't show the hover rectangle if the node is selected
+        if (this.view.box)
+            return;
+
+        if (App.hoverElement)
+            App.hoverElement.remove();
+        App.hoverElement = get_rect_box(this);
+    },
+    hOut : function(e) {
+        if (App.hoverElement)
+            App.hoverElement.remove();
+    },
+    mUp : function(e) {
+        elementSelected(this);
+    },
+
     /* Binds the events related to interaction: hover (shows the bounding box
      * of the entire node), click (should instance the node editor for the
-     * selected node)
+     * selected node). It clears the events out first to avoid binding twice
      */
     bindEvents: function(node) {
         var elements = node.elements;
-        elements.mouseup(function(e) {
-            elementSelected(node);
-        }).hover(
-            function(e) {
-                // don't show the hover rectangle if the node is selected
-                if (node.view.box)
-                    return;
-
-                if (App.hoverElement)
-                    App.hoverElement.remove();
-                App.hoverElement = get_rect_box(node);
-            },
-            function(e) {
-                if (App.hoverElement)
-                    App.hoverElement.remove();
-            }
-        );
+        elements.unmouseup(this.mUp);
+        elements.unhover(this.hIn, this.hOut);
+        elements.mouseup(this.mUp, node).hover(this.hIn, this.hOut, node, node);
     },
 };
 
@@ -246,6 +256,12 @@ function elementSelected(node) {
             sel_node.elements.exclude(sel_node.view.box);
             sel_node.view.box.remove();
             sel_node.view.box = null;
+        }
+        /* Clicked the selected node -> deselect */
+        if (sel_node === node) {
+            App.selectedElement = null;
+            App.clearEditForm();
+            return;
         }
         sel_node = null;
     }
