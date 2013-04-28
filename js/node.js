@@ -30,7 +30,6 @@ function Node() {
     this.features = null;
     this.strikeout = false;
 
-    /* TODO: Move all raphael objects inside some form of container */
     this.view = {
         strikeout : null,
         text : null,  /* Raphael text element */
@@ -50,6 +49,10 @@ Node.prototype.add_child = function(node) {
         node.previous = this.last;
         node.previous.next = node;
         this.last = node;
+    }
+    else {
+        this.has_children = true;
+        this.first = this.last = node;
     }
     return node;
 };
