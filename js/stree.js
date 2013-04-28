@@ -198,6 +198,7 @@ function saveSelection() {
         node.features = feats;
 
     node.strikeout = $('#editor-strikeout').prop('checked');
+    /* Only draw a triangle over a node if it has a parent and no siblings */
     if ((node.parent) && (node.parent.children.length == 1))
         node.parent.caret = $('#editor-triangle').prop('checked');
 
@@ -224,6 +225,7 @@ function elementSelected(node) {
         if (sel_node.view.box) {
             sel_node.elements.exclude(sel_node.view.box);
             sel_node.view.box.remove();
+            sel_node.view.box = null;
         }
         sel_node = null;
     }
