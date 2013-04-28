@@ -215,6 +215,7 @@ Node.prototype.draw_features = function() {
     if (this.view.features) {
         this.elements.exclude(this.view.features);
         this.view.features.remove()
+        this.view.features = null;
     }
 
     if (this.features) {
@@ -241,11 +242,11 @@ Node.prototype.draw = function(treeSet) {
             'font-size': Tree.font_size,
         });
         this.elements.push(this.view.text);
-        Tree.bindEvents(this);
         treeSet.push(this.elements);
     }
     this.view.text.attr('text', this.value);
     this.draw_features();
+    Tree.bindEvents(this);
 
     for (var child = this.first; child != null; child = child.next)
         child.draw(treeSet);
