@@ -252,6 +252,11 @@ Node.prototype.draw = function(treeSet) {
         child.draw(treeSet);
 };
 
+Node.prototype.to_right = function() {
+    if (this.next)
+        this.next.to_left();
+};
+
 Node.prototype.to_left = function() {
     if (this.previous) {
         var hold = this.previous;

@@ -61,6 +61,16 @@ App = {
             }
             return false;
         });
+        /* Swap to the right */
+        $(document).on('click', '#editor-node-right', function(e) {
+            var node = App.selectedElement;
+            if ((node) && (node.parent)) {
+                node.to_right();
+                node.redraw_tree();
+                elementSelected(node);
+            }
+            return false;
+        });
         $(document).on('click', '.example-link', function(e) {
             $('#stage').val($(this).text());
         });
