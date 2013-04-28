@@ -12,5 +12,5 @@ Currently implemented features are:
 
 ![Screenshot](https://raw.github.com/mdsn/stree/master/eg2.png "Example")
 
-The idea is to build an UI around this parsing and rendering core so people don't have to deal with the square bracket notation, which gets messy after indenting a couple of levels.
+Nodes can be selected by clicking on them, and then edited. Deselect a node by clicking on it. Child nodes can be added, deleted and swapped to the left or right with their siblings.
 

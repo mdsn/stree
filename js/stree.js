@@ -113,7 +113,7 @@ Tree = {
     node_text_separation: 3,
 
     /* These three functions receive the node as their context */
-    hIn : function(e) {
+    hIn: function(e) {
         // don't show the hover rectangle if the node is selected
         if (this.view.box)
             return;
@@ -122,11 +122,11 @@ Tree = {
             App.hoverElement.remove();
         App.hoverElement = get_rect_box(this);
     },
-    hOut : function(e) {
+    hOut: function(e) {
         if (App.hoverElement)
             App.hoverElement.remove();
     },
-    mUp : function(e) {
+    mUp: function(e) {
         elementSelected(this);
     },
 
