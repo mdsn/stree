@@ -38,6 +38,33 @@ function Node() {
     }
 };
 
+Node.prototype.remove = function() {
+    var p = this.parent;
+    if (!p)
+        return;
+
+    (function cleanUp(node) {
+        if (node.has_children) {
+            for (var child = node.first; child != null; child = child.next) {
+                cleanUp(child);
+            }
+            node.children = null;
+        }
+        for (var element in node.view) {
+            if (node.view[element]) {
+                node.view[element].remove();
+                node.view[element] = null;
+            }
+        }
+        node.parent = null;
+    })(this);
+
+    /* Remove from parent's children */
+    var i = p.children.indexOf(this);
+    p.children.splice(i, 1);
+    p.relate(p.parent);
+};
+
 Node.prototype.add_child = function(node) {
     if (!node) {
         node = new Node();
@@ -73,7 +100,7 @@ Node.prototype.bottom_y = function() {
 /* Mark nodes under a triangle */
 Node.prototype.check_triangles = function() {
     this.draw_triangle = false;
-    if ((!this.has_children) && (this.parent.caret))
+    if ((this.parent) && (!this.has_children) && (this.parent.caret))
         this.draw_triangle = true;
 
     for (var child = this.first; child != null; child = child.next)
@@ -89,9 +116,9 @@ Node.prototype.find_root = function() {
 
 /* Traverse the tree post-order and draw the lines connecting each node with
  * its parent */
-Node.prototype.draw_tree_lines = function(treeSet) {
+Node.prototype.draw_tree_lines = function(linesSet) {
     for (var child = this.first; child != null; child = child.next)
-        child.draw_tree_lines(treeSet);
+        child.draw_tree_lines(linesSet);
 
     /* Do nothing for the root node */
     if (!this.parent) return;
@@ -111,7 +138,7 @@ Node.prototype.draw_tree_lines = function(treeSet) {
         path = from + to;
     }
 
-    treeSet.push(App.R.path(path));
+    linesSet.push(App.R.path(path));
 };
 
 /* Traverse the tree post-order, set the location of each children according to
@@ -171,6 +198,7 @@ Node.prototype.find_height = function() {
 
 Node.prototype.redraw_tree = function() {
     var root = this.find_root();
+    root.check_triangles();
     if (App.treeSet) {
         root.draw(App.treeSet);
     }
@@ -271,15 +299,25 @@ Node.prototype.relate = function(parent) {
         this.first = this.children[0];
         this.last = this.children[this.children.length - 1];
     }
+    else {
+        this.first = null;
+        this.last = null;
+    }
 
     for (var i = 0; i < this.children.length; i++)
         this.children[i].relate(this);
 
-    for (var i = 0; i < this.children.length - 1; i++)
-        this.children[i].next = this.children[i+1];
+    if (this.children.length == 1) {
+        this.first.next = null;
+        this.first.previous = null;
+    }
+    else {
+        for (var i = 0; i < this.children.length - 1; i++)
+            this.children[i].next = this.children[i+1];
 
-    for (var i = 1; i < this.children.length; i++)
-        this.children[i].previous = this.children[i-1];
+        for (var i = 1; i < this.children.length; i++)
+            this.children[i].previous = this.children[i-1];
+    }
 };
 
 Node.prototype.reset_chains = function() {

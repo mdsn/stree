@@ -87,7 +87,20 @@
                     <div class="btn-group">
                         <button id="editor-add-child" class="btn">Child node</button>
                         <button class="btn">Parent node</button>
-                        <button class="btn"><i class="icon-ban-circle"></i> Delete node</button>
+                        <div class="btn-group">
+                            <button id="editor-delete-node" class="btn">
+                                <i class="icon-repeat"></i> Delete cascaded
+                            </button>
+                            <button class="btn dropdown-toggle" data-toggle="dropdown">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a id="editor-delete-single-node" href="#">
+                                        <i class="icon-remove-sign"></i> Delete single node
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </form>
                 <button id="editor-save" class="btn">Save</button>

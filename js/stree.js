@@ -40,6 +40,17 @@ App = {
             }
             return false;
         });
+        /* Cascade delete */
+        $(document).on('click', '#editor-delete-node', function(e) {
+            var node = App.selectedElement;
+            if (node) {
+                var root = node.find_root();
+                node.remove();
+                root.redraw_tree();
+                elementSelected(root);
+            }
+            return false;
+        });
         $(document).on('click', '.example-link', function(e) {
             $('#stage').val($(this).text());
         });
@@ -208,8 +219,10 @@ function elementSelected(node) {
     /* Deselect previous element */
     var sel_node = App.selectedElement;
     if (sel_node) {
-        sel_node.elements.exclude(sel_node.view.box);
-        sel_node.view.box.remove();
+        if (sel_node.view.box) {
+            sel_node.elements.exclude(sel_node.view.box);
+            sel_node.view.box.remove();
+        }
         sel_node = null;
     }
 
