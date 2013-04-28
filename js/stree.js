@@ -36,6 +36,7 @@ App = {
             if (App.selectedElement) {
                 var node = App.selectedElement.add_child(null);
                 node.redraw_tree();
+                elementSelected(node);
             }
             return false;
         });
@@ -81,22 +82,6 @@ Tree = {
     bindEvents: function(node) {
         var elements = node.elements;
         elements.mouseup(function(e) {
-            var sel_node = App.selectedElement;
-            if (sel_node) {
-                sel_node.elements.exclude(sel_node.view.box);
-                sel_node.view.box.remove();
-                sel_node = null;
-            }
-
-            if (App.hoverElement)
-                App.hoverElement.remove();
-
-            node.view.box = get_rect_box(node);
-            node.view.box.attr({
-                stroke: 'green',
-            });
-
-            node.elements.push(node.view.box);
             elementSelected(node);
         }).hover(
             function(e) {
@@ -220,6 +205,25 @@ function saveSelection() {
 };
 
 function elementSelected(node) {
+    /* Deselect previous element */
+    var sel_node = App.selectedElement;
+    if (sel_node) {
+        sel_node.elements.exclude(sel_node.view.box);
+        sel_node.view.box.remove();
+        sel_node = null;
+    }
+
+    if (App.hoverElement)
+        App.hoverElement.remove();
+
+    /* new green box */
+    node.view.box = get_rect_box(node);
+    node.view.box.attr({
+        stroke: 'green',
+    });
+
+    node.elements.push(node.view.box);
+
     App.selectedElement = node;
     $('#editor-value').val(node.value);
     $('#editor-features').val(node.features);
